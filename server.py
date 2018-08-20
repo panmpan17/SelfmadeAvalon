@@ -1,81 +1,67 @@
+import json
 import asyncio
 import asyncws
-import json
+import random
+import string
 
-MERLIN = "merlin"
-PERCIVAL = "percival"
-SERVANT = "servant"
+PLAYERLIMIT = 2
+REQUIRE_TO_START = 2
 
-MORDRED = "mordred"
-MORGANA = "morgana"
-OBERON = "oberon"
-ASSASSIN = "assassin"
-EVIL = "evil"
 
-CARSET = {
-    5: [MERLIN, SERVANT, SERVANT, MORDRED, ASSASSIN],
-    6: [MERLIN, PERCIVAL, SERVANT, SERVANT, ASSASSIN, MORGANA],
-    7: [MERLIN, PERCIVAL, SERVANT, SERVANT, MORDRED, MORDRED, ASSASSIN],
-    8: [MERLIN, PERCIVAL, SERVANT, SERVANT, SERVANT, MORDRED, MORDRED, ASSASSIN],
-    9: [MERLIN, PERCIVAL, SERVANT, SERVANT, SERVANT, SERVANT, MORDRED, MORDRED, ASSASSIN],
-    10: [MERLIN, PERCIVAL, SERVANT, SERVANT, SERVANT, SERVANT, MORDRED, MORDRED, ASSASSIN, EVIL],
-}
+class Method:
+
+    def __init__(self, method_json):
+        for method in method_json:
+            self.__setattr__(method, method)
+
+# load game setting
+game_setting = json.load(open("game_setting.json"))
+method = Method(game_setting["method"])
+
+lock = asyncio.Lock()
+waiting = []
+spectating = []
+playing = []
+players = {}
+started = False
 
 SECRET = "mlpn"
 
-class METHOD:
-    ERROR = "error"
+# MERLIN = "merlin"
+# PERCIVAL = "percival"
+# SERVANT = "servant"
 
-    LOGIN = "login"
-    READY = "ready"
-    UNREADY = "unready"
-    SPECTATE = "spectate"
-    UNSPECTATE = "unspectate"
-    CHOSETEAM = "choseteam"
-    COMFIRMTEAM = "comfirmteam"
-    APPROVE = "approve"
-    REJECT = "reject"
-    SUCCESS = "success"
-    FAIL = "fail"
-    LAKE = "lake"
-    ASSASIN = "assasin"
+# MORDRED = "mordred"
+# MORGANA = "morgana"
+# OBERON = "oberon"
+# ASSASSIN = "assassin"
+# EVIL = "evil"
 
-    VARIFYFAIL = "varifyfail"
-    # SPECTATE
-    WAITING = "waiting"
-    NEEDREADY = "needready"
-    TOOMANY = "toomany"
-    START = "start"
-    ASKTEAM = "askteam"
-    ASKAPPROVAL = "askapproval"
-    ASSEMBLEFAIL = "assemblefail"
-    ASKSUCCESS = "asksuccess"
-    FAIL = "fail"
-    SUCCESS = "success"
-    END = "end"
 
 class Dull:
     pass
 
+
 class ErrMsg:
     DATA_PARSE_WRONG = {
         "success": False,
-        "method": METHOD.ERROR,
+        "method": method.ERROR,
         "reason": "Data Parse Error"}
 
     VARIFYFAIL = {
         "success": False,
         "close": True,
-        "method": METHOD.VARIFYFAIL}
+        "method": method.VARIFYFAIL}
 
 
 class Handler(object):
-    def handle(self, data):
+
+    def handle(self, data, user_id):
         if "method" not in data:
             return ErrMsg.DATA_PARSE_WRONG
 
         method = data["method"]
-        response = self.__getattribute__(method)(data)
+        response = yield from self.__getattribute__(method)(data, user_id)
         return response
 
     def _checkdata(self, data, keys):
@@ -87,7 +73,7 @@ class Handler(object):
             setattr(dull, key, data[key])
         return dull
 
-    def login(self, data):
+    def LOGIN(self, data, user_id):
         data = self._checkdata(data, ("name", "secret"))
         if not data:
             # response can't leave blank
@@ -100,40 +86,91 @@ class Handler(object):
         if data.secret != SECRET:
             return ErrMsg.VARIFYFAIL
 
-        
-        return {
+        response = {
             "success": True,
             "status": "Waiting",
-            }
+        }
+
+        yield from lock.acquire()
+
+        if len(waiting) >= PLAYERLIMIT or started:
+            response["method"] = method.SPECTATE
+            spectating.append(user_id)
+        else:
+            response["method"] = method.WAITING
+            waiting.append(user_id)
+
+        if len(waiting) >= REQUIRE_TO_START and response["method"] == method.WAITING:
+            response["askready"] = True
+
+        lock.release()
+        return response
 
 
 @asyncio.coroutine
-def echo(websocket):
+def handle_client(websocket):
+    user_id = "".join(random.sample(string.ascii_letters, 10))
+    players[user_id] = websocket
+    print(players)
+
     while True:
         try:
             data = yield from websocket.recv()
             if data == None:
+                yield from lock.acquire()
+
+                if user_id in waiting:
+                    waiting.remove(user_id)
+                if user_id in playing:
+                    playing.remove(user_id)
+                if user_id in spectating:
+                    spectating.remove(user_id)
+
+                players.pop(user_id)
+                print(players)
+
+                lock.release()
                 # TODO: Notify other user, theres one user disconnect
                 break
 
             data = json.loads(data)
         except Exception as e:
-            yield from websocket.send(json.dumps(DATA_PARSE_WRONG))
+            yield from websocket.send(json.dumps(ErrMsg.DATA_PARSE_WRONG))
             continue
 
         try:
-            response = handler.handle(data)
+            response = yield from handler.handle(data, user_id)
+            print("handle complete", data, response)
 
-            print("handle complete", response)
             yield from websocket.send(json.dumps(response))
 
-            # 關閉連結
+            print(waiting, playing, spectating)
+
+            if "askready" in response:
+                yield from lock.acquire()
+
+                if len(waiting) == REQUIRE_TO_START:
+                    for _id in waiting:
+                        yield from players[_id].send(json.dumps({
+                            "method": method.NEEDREADY,
+                        }))
+                else:
+                    yield from websocket.send(json.dumps({
+                        "method": method.NEEDREADY,
+                    }))
+
+                lock.release()
+
+            # shutdown connection if close in response
             if "close" in response:
                 yield from websocket.close()
+                return
+
         except Exception as e:
             print("Handle gone wrong: ", e)
 
-handler = Handler()
-server = asyncws.start_server(echo, '127.0.0.1', 8000)
-asyncio.get_event_loop().run_until_complete(server)
-asyncio.get_event_loop().run_forever()
+if __name__ == "__main__":
+    handler = Handler()
+    server = asyncws.start_server(handle_client, '127.0.0.1', 8000)
+    asyncio.get_event_loop().run_until_complete(server)
+    asyncio.get_event_loop().run_forever()

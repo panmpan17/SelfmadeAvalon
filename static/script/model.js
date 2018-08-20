@@ -1,7 +1,7 @@
 Method = {
     ERROR: "error",
 
-    LOGIN: "login",
+    LOGIN: "LOGIN",
     READY: "ready",
     UNREADY: "unready",
     SPECTATE: "spectate",

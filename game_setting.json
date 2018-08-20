@@ -1,0 +1,49 @@
+{
+    "character": [
+        "MERLIN",
+        "PERCIVAL",
+        "SERVANT",
+        "MORDRED",
+        "MORGANA",
+        "OBERON",
+        "ASSASSIN",
+        "EVIL"
+    ],
+    "character_set": {
+        "5": ["MERLIN", "SERVANT", "SERVANT", "MORDRED", "ASSASSIN"],
+        "6": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "ASSASSIN", "MORGANA"],
+        "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
+        "8": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
+        "9": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
+        "10": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN", "EVIL"]
+    },
+    "method": [
+        "ERROR",
+        "LOGIN",
+        "READY",
+        "UNREADY",
+        "SPECTATE",
+        "UNSPECTATE",
+        "CHOSETEAM",
+        "COMFIRMTEAM",
+        "APPROVE",
+        "REJECT",
+        "SUCCESS",
+        "FAIL",
+        "LAKE",
+        "ASSASIN",
+
+        "VARIFYFAIL",
+        "WAITING",
+        "NEEDREADY",
+        "TOOMANY",
+        "START",
+        "ASKTEAM",
+        "ASKAPPROVAL",
+        "ASSEMBLEFAIL",
+        "ASKSUCCESS",
+        "FAIL",
+        "SUCCESS",
+        "END"
+    ]
+}
