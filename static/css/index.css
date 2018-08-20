@@ -1,0 +1,12 @@
+* {
+	font-family: monospace;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: rgb(52, 61, 70);
+}
