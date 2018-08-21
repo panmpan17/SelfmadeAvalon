@@ -19,6 +19,7 @@
     },
     "method": [
         "ERROR",
+
         "LOGIN",
         "READY",
         "UNREADY",
@@ -34,6 +35,8 @@
         "ASSASIN",
 
         "VARIFYFAIL",
+        "PLAYERJOIN",
+        "PLAYERLEAVE",
         "WAITING",
         "NEEDREADY",
         "TOOMANY",
