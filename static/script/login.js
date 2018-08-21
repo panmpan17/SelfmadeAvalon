@@ -1,4 +1,4 @@
-var socket;
+var socket = null;
 var varify = false;
 
 function login () {
@@ -10,6 +10,10 @@ function login () {
 		return;
 	}
 
+	if (socket != null) {
+		return;
+	}
+
 	socket = new WebSocket("ws://localhost:8000");
 
 
@@ -17,7 +21,7 @@ function login () {
 		data = JSON.parse(event.data);
 
 		if (data.success == false) {
-			if (data.method == "varifyfail") {
+			if (data.method == Method.VARIFYFAIL) {
 				alert("密語錯誤");
 				return
 			}
@@ -41,5 +45,6 @@ function login () {
 		if (varify) {
 			console.log("伺服器關閉");
 		}
+		socket = null;
 	}
 }

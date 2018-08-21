@@ -1,4 +1,8 @@
-STORY = {
+var game_setting = null;
+var Method = null;
+var images = {};
+
+var STORY = {
 	basic: [
 		"天黑請閉眼",
 		"壞人請睜眼相認",
@@ -14,15 +18,28 @@ STORY = {
 	END: "天亮了, 所有人睜開眼睛",
 }
 
-images = {};
+function loadImages() {
+	$.each(images, function(name, image) {
+		if (!(image instanceof Object)) {
+			images[name] = new Image();
+			images[name].src = image;
+		}
+	});
+}
 
 $(document).ready(function() {
 	$.ajax({
-		url: "/images",
+		url: "/game_setting",
 		success (msg) {
-			$.each(msg["images"], function (_, image) {
-				images[image] = new Image();
-				images[image].src = "/static/images/" + image;
+			game_setting = msg;
+			$.each(msg.images, function(_, image) {
+				var name = image.substring(0, image.find("."));
+				images[name] = "/static/images/" + image;
+			});
+
+			Method = {};
+			$.each(msg.method, function(_, method) {
+				Method[method] = method;
 			});
 		}
 	});
