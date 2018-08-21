@@ -1,0 +1,47 @@
+#game {
+	display: none;
+}
+
+
+#waiting-number {
+	position: fixed;
+	top: 50px;
+	left: 50px;
+	color: white;
+}
+
+#spectating-number {
+	position: fixed;
+	top: 100px;
+	left: 50px;
+	color: white;
+}
+
+#ready {
+	position: fixed;
+	top: 30%;
+	left: 30%;
+	width: 40%;
+	height: 40%;
+	font-size: 5em;
+	color: white;
+	border: none;
+	border-radius: 50px;
+	background: tomato;
+	opacity: .9;
+}
+
+#ready:hover {
+	opacity: 1;
+}
+
+#ready.disable {
+	opacity: .5;
+	cursor: not-allowed;
+}
+
+#ready.active {
+	border: 5px solid cornflowerblue;
+}
+
+#togglespectate {}

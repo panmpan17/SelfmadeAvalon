@@ -10,12 +10,17 @@
         "EVIL"
     ],
     "character_set": {
+        "2": ["MERLIN", "MORGANA"],
         "5": ["MERLIN", "SERVANT", "SERVANT", "MORDRED", "ASSASSIN"],
         "6": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "ASSASSIN", "MORGANA"],
-        "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
-        "8": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
-        "9": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN"],
-        "10": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORDRED", "ASSASSIN", "EVIL"]
+        "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
+        "8": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
+        "9": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
+        "10": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN", "EVIL"]
+    },
+    "special_power": {
+        "MERLIN": ["MORGANA", "ASSASSIN", "EVIL"],
+        "PERCIVAL": ["MERLIN", "MORGANA"]
     },
     "method": [
         "ERROR",
@@ -39,6 +44,7 @@
         "PLAYERLEAVE",
         "WAITING",
         "NEEDREADY",
+        "CONFIRMREADY",
         "TOOMANY",
         "START",
         "ASKTEAM",

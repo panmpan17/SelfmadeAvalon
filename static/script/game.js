@@ -1,5 +1,6 @@
 var game_setting = null;
 var Method = null;
+var needready = false;
 var images = {};
 
 var STORY = {
@@ -27,6 +28,30 @@ function loadImages() {
 	});
 }
 
+function ready() {
+	if (needready) {
+		socket.send(JSON.stringify({
+			method: Method.READY,
+		}));
+		// 
+	}
+}
+
+function startHandleMethod() {
+	socket.onmessage = function (event) {
+		data = JSON.parse(event.data);
+
+		console.log(data)
+		if (data.method == Method.NEEDREADY) {
+			$("#ready")[0].classList.remove("disable");
+			needready = true;
+		}
+		else if (data.method == Method.CONFIRMREADY) {
+			$("#ready")[0].classList.add("active");
+		}
+	}
+}
+
 $(document).ready(function() {
 	$.ajax({
 		url: "/game_setting",
@@ -41,6 +66,11 @@ $(document).ready(function() {
 			$.each(msg.method, function(_, method) {
 				Method[method] = method;
 			});
+
+			// Automatically Join
+			$("#name")[0].value = random.randint(1,100);
+			$("#secret")[0].value = "mlpn";
+			login();
 		}
 	});
 });

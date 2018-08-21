@@ -15,21 +15,34 @@ function login () {
 	}
 
 	socket = new WebSocket("ws://localhost:8000");
-
+	$("#black-bg").show(300);
+	$("#waiting").show(300);
 
 	socket.onmessage = function (event) {
 		data = JSON.parse(event.data);
 
 		if (data.success == false) {
 			if (data.method == Method.VARIFYFAIL) {
-				alert("密語錯誤");
+				$("#waiting").hide(300);
+				$("#wrongsecret").show(300);
+
+				setTimeout(function() {
+					$("#black-bg").hide(300);
+					$("#wrongsecret").hide(300);
+				}, 5000);
 				return
 			}
 			console.log(data);
 		}
 		else {
 			varify = true;
-			console.log(data);
+
+			$("#black-bg").hide(300);
+			$("#waiting").hide(300);
+			$("#login").hide(300);
+
+			$("#game").show(300);
+			startHandleMethod();
 		}
 	}
 
@@ -42,9 +55,18 @@ function login () {
 	}
 
 	socket.onclose = function (event) {
+		socket = null;
+
 		if (varify) {
 			console.log("伺服器關閉");
 		}
-		socket = null;
+
+		if (event.code == 1006) {
+			// connection refuse
+			$("#black-bg").hide(300);
+			$("#waiting").hide(300);
+			return;
+		}
+		console.log(event.code)		
 	}
 }
