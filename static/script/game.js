@@ -4,22 +4,8 @@ var needready = false;
 var images = {};
 
 var role = null;
-
-var STORY = {
-	basic: [
-		"天黑請閉眼",
-		"壞人請睜眼相認",
-		"壞人請閉眼",
-		"梅林睜眼, 除了莫德雷德, 壞人豎起大拇指",
-		"梅林閉眼, 壞人把手收起來",
-		
-	],
-	PERCIVAL: [
-	"派西維爾睜眼, 魔甘娜和梅林豎起大拇指",
-	"派西維爾閉眼, 魔甘娜和梅林把手收起來",
-	],
-	END: "天亮了, 所有人睜開眼睛",
-}
+var special_power = null;
+var hasPercival = false;
 
 function loadImages() {
 	$.each(images, function(name, image) {
@@ -42,9 +28,9 @@ function ready() {
 function displayCard(players) {
 	$.each(players, function(_, player) {
 		var div = $("<div>")[0];
-		div.class = "player-card"
+		div.classList.add("player-card");
 		div.id = "player-" + player[0];
-		div.innerHTML = player[1];
+		// div.innerHTML = player[1];
 
 		div.append(images.unknown.cloneNode());
 
@@ -53,25 +39,24 @@ function displayCard(players) {
 }
 
 function displayMyself() {
-	$("#player-" + user_id)[0].removeChild($("#player-" + user_id)[0].children[0]);
-	$("#player-" + user_id)[0].append(images[role.toLowerCase()].cloneNode());
-}
+	var ele = $("#player-" + user_id)[0];
+	ele.removeChild(ele.children[0]);
 
-function specialPower(special_power) {
-	$.each(special_power, function(_, _id) {
-		$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-
-		if (role == "MERLIN") {
-			$("#player-" + _id)[0].append(images.bad.cloneNode());
-		}
-	})
+	if (role != "SERVANT" && role != "EVIL") {
+		ele.append(images["q_" + role.toLowerCase()].cloneNode());
+	}
+	else if (role == "SERVANT") {
+		ele.append(images["q_" + role.toLowerCase() + "_" + random.randint(1, 5)].cloneNode());
+	}
+	else if (role == "EVIL") {
+		ele.append(images["q_" + role.toLowerCase() + "_" + random.randint(1, 2)].cloneNode());
+	}
 }
 
 function startHandleMethod() {
 	socket.onmessage = function (event) {
 		data = JSON.parse(event.data);
 
-		console.log(data)
 		if (data.method == Method.NEEDREADY) {
 			$("#ready")[0].classList.remove("disable");
 			needready = true;
@@ -87,12 +72,12 @@ function startHandleMethod() {
 			$("#game").show();
 
 			role = data.role;
+			special_power = data.special_power;
+			hasPercival = data.has_percival;
+
 			displayCard(data.players);
 			displayMyself();
-
-			if (data.special_power != undefined) {
-				specialPower(data.special_power);
-			}
+			playeStory();
 		}
 	}
 }

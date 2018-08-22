@@ -13,6 +13,11 @@ def index():
     return flask.render_template("index.html")
 
 
+@app.route("/test")
+def test():
+	return flask.render_template("test.html")
+
+
 @app.route("/game_setting")
 def settings():
     return flask.jsonify(game_setting)

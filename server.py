@@ -6,8 +6,8 @@ import asyncws
 import random
 import string
 
-PLAYERLIMIT = 2
-REQUIRE_TO_START = 2
+PLAYERLIMIT = 10
+REQUIRE_TO_START = 7
 
 
 class Method:
@@ -196,14 +196,17 @@ class SocketServer:
                 self.playing.extend(self.waiting)
                 self.waiting.clear()
 
-                players_info = [[self.players[i]["id"], self.players[i]["name"]] for i in self.playing]
-
                 role_map = dict(zip(self.playing, characters))
+                response = {
+                    "method": method.START,
+                    "players": [[self.players[i]["id"], self.players[i]["name"]] for i in self.playing],
+                    "has_percival": ("PERCIVAL" in characters),
+                    }
                 for player in self.playing:
                     role = role_map[player]
                     self.players[player]["role"] = role
 
-                    response = {"method": method.START, "role": role, "players": players_info}
+                    response["role"] = role
                     if role in game_setting["special_power"]:
                         response["special_power"] = [k for k, v in role_map.items() if v in game_setting["special_power"][role]]
 

@@ -20,7 +20,11 @@
     },
     "special_power": {
         "MERLIN": ["MORGANA", "ASSASSIN", "EVIL"],
-        "PERCIVAL": ["MERLIN", "MORGANA"]
+        "PERCIVAL": ["MERLIN", "MORGANA"],
+        "MORDRED": ["MORGANA", "ASSASSIN", "EVIL"],
+        "MORGANA": ["MORDRED", "ASSASSIN", "EVIL"],
+        "ASSASSIN": ["MORDRED", "MORGANA", "EVIL"],
+        "EVIL": ["MORDRED", "MORGANA", "ASSASSIN", "EVIL"]
     },
     "method": [
         "ERROR",
