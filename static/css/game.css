@@ -81,13 +81,23 @@
 	color: white;
 }
 
-#mission {
+#captain {
 	position: fixed;
 	left: -200px;
 	top: -200px;
 	z-index: 10;
 }
 
-#mission img {
+#captain img {
 	border-radius: 50%;
+	width: 50px;
+}
+
+#upper {
+	width: 100%;
+}
+
+#board {
+	width: 60%;
+	padding: 20px 20%;
 }

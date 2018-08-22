@@ -3,6 +3,7 @@ var Method = null;
 var needready = false;
 var images = {};
 
+var players_num = 0;
 var role = null;
 var special_power = null;
 var hasPercival = false;
@@ -74,25 +75,28 @@ function startHandleMethod() {
 			role = data.role;
 			special_power = data.special_power;
 			hasPercival = data.has_percival;
+			players_num = data.players.length;
+
+			$("#board")[0].append(images["b" + players_num]);
 
 			displayCard(data.players);
 			displayMyself();
 			playeStory();
 		}
 		else if (data.method == Method.CHOSECAPTAIN) {
-			if ($("#mission")[0].children.length == 0) {
-				$("#mission")[0].append(images.mission);
+			if ($("#captain")[0].children.length == 0) {
+				$("#captain")[0].append(images.captain);
 			}
 			
-			$("#mission")[0].style.top = "70px";
+			$("#captain")[0].style.top = $("#upper").height() + "px";
 
 			left = 0;
 			$.each($("#cards")[0].children, function(i, card) {
-				left += $(card).width();
 				if (card.id == ("player-" + data.captain)) {
-					$("#mission")[0].style.left = left + "px";
+					$("#captain")[0].style.left = left + ($(card).width() / 2) + "px";
 					return false;
 				}
+				left += $(card).width();
 			});
 		}
 	}

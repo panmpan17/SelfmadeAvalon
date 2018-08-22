@@ -39,21 +39,61 @@ class ErrMsg:
         "method": method.VARIFYFAIL}
 
 
-class SocketServer:
+class Game:
+    def __init__(self):
+        self.captain = None
+        self.readying = False
+        self.story_finish = 0
+        self.player_num = 0
 
+        self.team = []
+
+        self.round = 0
+        self.good = 0
+        self.evil = 0
+        self.failed = 0
+
+    def set_teams(self, players):
+        self.team.extend(players)
+
+    def get_teams(self, players):
+        return [[players[i]["id"], players[i]["name"]] for i in self.team]
+
+    def chose_captain(self):
+        if self.captain is None:
+            self.captain = random.choice(self.team)
+        else:
+            cap_index = self.team.index(self.captain) + 1
+            if cap_index == len(self.team):
+                cap_index = 0
+
+            self.captain = self.team[cap_index]
+
+        return self.captain
+
+    def has_finish_story(self):
+        return len(self.team) == self.story_finish
+
+    def disconnect(self, _id):
+        try:
+            self.team.remove(_id)
+        except Exception:
+            pass
+
+
+class SocketServer:
     def __init__(self):
         self.server = None
         self.lock = asyncio.Lock()
 
+        self.started = False
+
         self.players = {}
         self.waiting = []
         self.spectating = []
-        self.playing = []
-        self.captain = None
 
-        self.readying = False
-        self.started = False
-        self.story_finish = 0
+        self.captain = None
+        self.game = Game()
 
     def _checkdata(self, data, keys):
         dull = Dull()
@@ -82,11 +122,10 @@ class SocketServer:
         with (yield from self.lock):
             if user_id in self.waiting:
                 self.waiting.remove(user_id)
-            if user_id in self.playing:
-                self.playing.remove(user_id)
             if user_id in self.spectating:
                 self.spectating.remove(user_id)
 
+            self.game.disconnect(user_id)
             self.players.pop(user_id)
 
             # Todo: notify other
@@ -174,8 +213,6 @@ class SocketServer:
                     response["method"] == method.WAITING):
 
                 if len(self.waiting) == REQUIRE_TO_START:
-                    self.readying = True
-
                     for _id in self.waiting:
                         yield from self.players[_id]["socket"].send(
                             json.dumps({"method": method.NEEDREADY}))
@@ -195,21 +232,20 @@ class SocketServer:
                 characters = self.get_characters(len(self.waiting))
                 random.shuffle(characters)
 
-                self.playing.extend(self.waiting)
+                self.game = Game()
+
+                self.game.set_teams(self.waiting)
                 self.waiting.clear()
 
-                role_map = dict(zip(self.playing, characters))
-                players = []
-                for i in self.playing:
-                    players.append([self.players[i]["id"],
-                                    self.players[i]["name"]])
+                role_map = dict(zip(self.game.team, characters))
+                players = self.game.get_teams(self.players)
 
-                self.story_finish = 0
                 response = {
                     "method": method.START,
                     "players": players,
                     "has_percival": ("PERCIVAL" in characters)}
-                for player in self.playing:
+
+                for player in self.game.team:
                     role = role_map[player]
                     self.players[player]["role"] = role
 
@@ -224,17 +260,16 @@ class SocketServer:
                         json.dumps(response))
 
     def STORYFINISH(self, data, user_id, websocket):
-        self.story_finish += 1
+        self.game.story_finish += 1
 
-        if self.story_finish == len(self.playing):
-            self.captain = random.choice(self.playing)
+        if self.game.has_finish_story():
+            self.game.chose_captain()
 
             with (yield from self.lock):
-                for player in self.playing:
-                    print(method.CHOSECAPTAIN)
+                for player in self.game.team:
                     yield from self.players[player]["socket"].send(json.dumps({
                         "method": method.CHOSECAPTAIN,
-                        "captain": self.captain}))
+                        "captain": self.game.captain}))
 
     def get_characters(self, num):
         return game_setting["character_set"][str(num)].copy()

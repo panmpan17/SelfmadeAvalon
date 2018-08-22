@@ -10,13 +10,20 @@
         "EVIL"
     ],
     "character_set": {
-        "2": ["MERLIN", "MORGANA"],
         "5": ["MERLIN", "SERVANT", "SERVANT", "MORDRED", "ASSASSIN"],
         "6": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "ASSASSIN", "MORGANA"],
         "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
         "8": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
         "9": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
         "10": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN", "EVIL"]
+    },
+    "token_need": {
+        "5": {"numbers": [2, 3, 2, 3, 3], "two_fail": null},
+        "6": {"numbers": [2, 3, 4, 3, 4], "two_fail": null},
+        "7": {"numbers": [2, 3, 3, 4, 4], "two_fail": 3},
+        "8": {"numbers": [3, 4, 4, 5, 5], "two_fail": 3},
+        "9": {"numbers": [3, 4, 4, 5, 5], "two_fail": 3},
+        "10": {"numbers": [3, 4, 4, 5, 5], "two_fail": 3}
     },
     "special_power": {
         "MERLIN": ["MORGANA", "ASSASSIN", "EVIL"],
