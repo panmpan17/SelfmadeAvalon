@@ -7,6 +7,7 @@ var players_num = 0;
 var role = null;
 var special_power = null;
 var hasPercival = false;
+var tokenNeed = null;
 
 function loadImages() {
 	$.each(images, function(name, image) {
@@ -76,6 +77,7 @@ function startHandleMethod() {
 			special_power = data.special_power;
 			hasPercival = data.has_percival;
 			players_num = data.players.length;
+			tokenNeed = data.token_need;
 
 			$("#board")[0].append(images["b" + players_num]);
 

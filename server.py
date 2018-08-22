@@ -47,6 +47,8 @@ class Game:
         self.player_num = 0
 
         self.team = []
+        self.token_need = []
+        self.role_map = None
 
         self.round = 0
         self.good = 0
@@ -55,9 +57,24 @@ class Game:
 
     def set_teams(self, players):
         self.team.extend(players)
+        self.token_need = game_setting["token_need"][str(len(self.team))]
 
     def get_teams(self, players):
         return [[players[i]["id"], players[i]["name"]] for i in self.team]
+
+    def set_characters(self, players):
+        characters = game_setting["character_set"][
+            str(len(self.team))].copy()
+        random.shuffle(characters)
+
+        self.role_map = dict(zip(self.team, characters))
+
+        response = {
+            "method": method.START,
+            "players": self.get_teams(players),
+            "token_need": self.token_need,
+            "has_percival": ("PERCIVAL" in characters)}
+        return response
 
     def chose_captain(self):
         if self.captain is None:
@@ -73,6 +90,11 @@ class Game:
 
     def has_finish_story(self):
         return len(self.team) == self.story_finish
+
+    def notify_captain(self):
+        return json.dumps({
+            "method": method.CHOSECAPTAIN,
+            "captain": self.captain})
 
     def disconnect(self, _id):
         try:
@@ -229,30 +251,21 @@ class SocketServer:
             self.players[user_id]["ready"] = True
 
             if all([self.players[_id]["ready"] for _id in self.waiting]):
-                characters = self.get_characters(len(self.waiting))
-                random.shuffle(characters)
-
                 self.game = Game()
 
                 self.game.set_teams(self.waiting)
                 self.waiting.clear()
 
-                role_map = dict(zip(self.game.team, characters))
-                players = self.game.get_teams(self.players)
-
-                response = {
-                    "method": method.START,
-                    "players": players,
-                    "has_percival": ("PERCIVAL" in characters)}
+                response = self.game.set_characters(self.players)
 
                 for player in self.game.team:
-                    role = role_map[player]
+                    role = self.game.role_map[player]
                     self.players[player]["role"] = role
 
                     response["role"] = role
                     if role in game_setting["special_power"]:
                         response["special_power"] = []
-                        for k, v in role_map.items():
+                        for k, v in self.game.role_map.items():
                             if v in game_setting["special_power"][role]:
                                 response["special_power"].append(k)
 
@@ -267,12 +280,8 @@ class SocketServer:
 
             with (yield from self.lock):
                 for player in self.game.team:
-                    yield from self.players[player]["socket"].send(json.dumps({
-                        "method": method.CHOSECAPTAIN,
-                        "captain": self.game.captain}))
-
-    def get_characters(self, num):
-        return game_setting["character_set"][str(num)].copy()
+                    yield from self.players[player]["socket"].send(
+                        self.game.notify_captain)
 
 
 if __name__ == "__main__":
