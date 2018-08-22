@@ -1,4 +1,4 @@
-var STORYTIME = 1000;
+var STORYTIME = 500;
 var STORY = {
 	BASIC: [
 		{text: "天黑請閉眼", callback: null},
@@ -26,7 +26,7 @@ function evilSee() {
 		$.each(special_power, function(_, _id) {
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
 			$("#player-" + _id)[0].append(images.bad.cloneNode());
-			$("#player-" + _id)[0].style.zIndex = 11;
+			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
 				$("#player-" + _id)[0].style.zIndex = 9;
@@ -39,7 +39,7 @@ function merlinSee() {
 		$.each(special_power, function(_, _id) {
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
 			$("#player-" + _id)[0].append(images.bad.cloneNode());
-			$("#player-" + _id)[0].style.zIndex = 11;
+			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
 				$("#player-" + _id)[0].style.zIndex = 9;
@@ -53,7 +53,7 @@ function percivalSee() {
 		$.each(special_power, function(_, _id) {
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
 			$("#player-" + _id)[0].append(images.q_morganamerlin.cloneNode());
-			$("#player-" + _id)[0].style.zIndex = 11;
+			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
 				$("#player-" + _id)[0].style.zIndex = 9;
@@ -64,6 +64,10 @@ function percivalSee() {
 
 function storyEnd() {
 	$("#story").hide(300);
+
+	socket.send(JSON.stringify({
+		method: Method.STORYFINISH,
+	}));
 }
 
 function playeStory() {

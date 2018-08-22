@@ -49,9 +49,11 @@ class SocketServer:
         self.waiting = []
         self.spectating = []
         self.playing = []
+        self.captain = None
 
         self.readying = False
         self.started = False
+        self.story_finish = 0
 
     def _checkdata(self, data, keys):
         dull = Dull()
@@ -95,7 +97,8 @@ class SocketServer:
     @asyncio.coroutine
     def handle_client(self, websocket):
         user_id = "".join(random.sample(string.ascii_letters, 10))
-        self.players[user_id] = {"id": user_id, "socket": websocket, "ready": False}
+        self.players[user_id] = {"id": user_id, "socket": websocket,
+                                 "ready": False}
 
         while True:
             try:
@@ -178,8 +181,7 @@ class SocketServer:
                             json.dumps({"method": method.NEEDREADY}))
                 else:
                     yield from websocket.send(json.dumps({
-                        "method": method.NEEDREADY,
-                        }))
+                        "method": method.NEEDREADY}))
 
     def READY(self, data, user_id, websocket):
         # response = {"method": method.CONFIRMREADY, "success": True}
@@ -197,21 +199,42 @@ class SocketServer:
                 self.waiting.clear()
 
                 role_map = dict(zip(self.playing, characters))
+                players = []
+                for i in self.playing:
+                    players.append([self.players[i]["id"],
+                                    self.players[i]["name"]])
+
+                self.story_finish = 0
                 response = {
                     "method": method.START,
-                    "players": [[self.players[i]["id"], self.players[i]["name"]] for i in self.playing],
-                    "has_percival": ("PERCIVAL" in characters),
-                    }
+                    "players": players,
+                    "has_percival": ("PERCIVAL" in characters)}
                 for player in self.playing:
                     role = role_map[player]
                     self.players[player]["role"] = role
 
                     response["role"] = role
                     if role in game_setting["special_power"]:
-                        response["special_power"] = [k for k, v in role_map.items() if v in game_setting["special_power"][role]]
+                        response["special_power"] = []
+                        for k, v in role_map.items():
+                            if v in game_setting["special_power"][role]:
+                                response["special_power"].append(k)
 
                     yield from self.players[player]["socket"].send(
                         json.dumps(response))
+
+    def STORYFINISH(self, data, user_id, websocket):
+        self.story_finish += 1
+
+        if self.story_finish == len(self.playing):
+            self.captain = random.choice(self.playing)
+
+            with (yield from self.lock):
+                for player in self.playing:
+                    print(method.CHOSECAPTAIN)
+                    yield from self.players[player]["socket"].send(json.dumps({
+                        "method": method.CHOSECAPTAIN,
+                        "captain": self.captain}))
 
     def get_characters(self, num):
         return game_setting["character_set"][str(num)].copy()

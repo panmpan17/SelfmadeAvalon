@@ -79,6 +79,22 @@ function startHandleMethod() {
 			displayMyself();
 			playeStory();
 		}
+		else if (data.method == Method.CHOSECAPTAIN) {
+			if ($("#mission")[0].children.length == 0) {
+				$("#mission")[0].append(images.mission);
+			}
+			
+			$("#mission")[0].style.top = "70px";
+
+			left = 0;
+			$.each($("#cards")[0].children, function(i, card) {
+				left += $(card).width();
+				if (card.id == ("player-" + data.captain)) {
+					$("#mission")[0].style.left = left + "px";
+					return false;
+				}
+			});
+		}
 	}
 }
 
