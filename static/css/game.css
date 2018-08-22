@@ -1,4 +1,4 @@
-#game {
+#prepare {
 	display: none;
 }
 
@@ -45,3 +45,16 @@
 }
 
 #togglespectate {}
+
+#game {
+	display: none;
+}
+
+#cards {
+	display: flex;
+	flex-wrap: all;
+}
+
+.player-card {
+	height: 300px;
+}

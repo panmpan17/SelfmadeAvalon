@@ -3,6 +3,8 @@ var Method = null;
 var needready = false;
 var images = {};
 
+var role = null;
+
 var STORY = {
 	basic: [
 		"天黑請閉眼",
@@ -37,6 +39,34 @@ function ready() {
 	}
 }
 
+function displayCard(players) {
+	$.each(players, function(_, player) {
+		var div = $("<div>")[0];
+		div.class = "player-card"
+		div.id = "player-" + player[0];
+		div.innerHTML = player[1];
+
+		div.append(images.unknown.cloneNode());
+
+		$("#cards")[0].appendChild(div);
+	});
+}
+
+function displayMyself() {
+	$("#player-" + user_id)[0].removeChild($("#player-" + user_id)[0].children[0]);
+	$("#player-" + user_id)[0].append(images[role.toLowerCase()].cloneNode());
+}
+
+function specialPower(special_power) {
+	$.each(special_power, function(_, _id) {
+		$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
+
+		if (role == "MERLIN") {
+			$("#player-" + _id)[0].append(images.bad.cloneNode());
+		}
+	})
+}
+
 function startHandleMethod() {
 	socket.onmessage = function (event) {
 		data = JSON.parse(event.data);
@@ -45,9 +75,24 @@ function startHandleMethod() {
 		if (data.method == Method.NEEDREADY) {
 			$("#ready")[0].classList.remove("disable");
 			needready = true;
+
+			// Automatically Ready
+			ready();
 		}
 		else if (data.method == Method.CONFIRMREADY) {
 			$("#ready")[0].classList.add("active");
+		}
+		else if (data.method == Method.START) {
+			$("#prepare").hide();
+			$("#game").show();
+
+			role = data.role;
+			displayCard(data.players);
+			displayMyself();
+
+			if (data.special_power != undefined) {
+				specialPower(data.special_power);
+			}
 		}
 	}
 }

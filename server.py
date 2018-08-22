@@ -150,7 +150,7 @@ class SocketServer:
             yield from websocket.send(json.dumps(ErrMsg.VARIFYFAIL))
             return "close"
 
-        response = {"success": True, }
+        response = {"success": True, "id": user_id}
 
         with (yield from self.lock):
             self.players[user_id]["name"] = data.name

@@ -1,5 +1,6 @@
 var socket = null;
 var varify = false;
+var user_id = null;
 
 function login () {
 	name = $("#name")[0].value;
@@ -36,13 +37,15 @@ function login () {
 		}
 		else {
 			varify = true;
+			user_id = data.id;
 
 			$("#black-bg").hide(300);
 			$("#waiting").hide(300);
 			$("#login").hide(300);
 
-			$("#game").show(300);
+			$("#prepare").show(300);
 			startHandleMethod();
+			loadImages();
 		}
 	}
 
