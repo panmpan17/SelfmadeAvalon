@@ -70,6 +70,6 @@ function login () {
 			$("#waiting").hide(300);
 			return;
 		}
-		console.log(event.code)		
+		console.log(event.code);
 	}
 }

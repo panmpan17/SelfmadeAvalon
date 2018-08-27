@@ -50,6 +50,47 @@
 	display: none;
 }
 
+#upper {
+	width: 100%;
+}
+
+#upper img {
+	max-height: 350px;
+}
+
+#board {
+	width: 60%;
+	padding: 20px 20%;
+}
+
+#confirm {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.6);
+	margin: 20px 20%;
+}
+
+#confirm #text {
+	width: 50%;
+	height: 80px;
+	border-radius: 25px;
+	background: tomato;
+	margin: 25%;
+	color: white;
+	line-height: 80px;
+	text-align: center;
+	cursor: pointer;
+}
+
+#team .teamate {
+	position: fixed;
+	transition-duration: .4s;
+	top: 0;
+	left: 0;
+	border-radius: 20px;
+	height: 80px;
+	z-index: 10;
+}
+
 #cards {
 	display: flex;
 	flex-wrap: all;
@@ -66,21 +107,6 @@
 	width: 80%;
 }
 
-#story {
-	display: none;
-	position: fixed;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, .7);
-	z-index: 12;
-}
-
-#story #text {
-	color: white;
-}
-
 #captain {
 	position: fixed;
 	left: -200px;
@@ -93,20 +119,38 @@
 	width: 50px;
 }
 
-#upper {
-	width: 100%;
-}
-
-#board {
-	width: 60%;
-	padding: 20px 20%;
-}
-
-.teamate {
+#story, #vote {
+	display: none;
 	position: fixed;
-	top: 0;
 	left: 0;
-	border-radius: 20px;
-	height: 80px;
-	z-index: 10;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, .2);
+	z-index: 12;
+}
+
+#story #text {
+	color: white;
+}
+
+#vote #approve, #vote #reject {
+	position: fixed;
+	left: 50px;
+	top: calc(50% - 100px);
+	height: 200px;
+}
+
+#vote #reject {
+	left: auto;
+	right: 50px;
+}
+
+#vote img {
+	width: 130px;
+	cursor: pointer
+}
+
+#vote #approve:hover img, #vote #reject:hover img {
+	outline: 25px solid rgb(200, 200, 255, .6);
 }

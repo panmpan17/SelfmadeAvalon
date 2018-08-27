@@ -49,7 +49,12 @@ class Game:
         self.users = []
         self.team = []
         self.token_need = []
+        self.approve = []
+        self.reject = []
         self.role_map = None
+
+        self.chosing = False
+        self.confirming = False
 
         self.round = 0
         self.good = 0
@@ -77,6 +82,9 @@ class Game:
             "has_percival": ("PERCIVAL" in characters)}
         return response
 
+    def has_finish_story(self):
+        return len(self.users) == self.story_finish
+
     def chose_captain(self):
         if self.captain is None:
             self.captain = random.choice(self.users)
@@ -89,6 +97,15 @@ class Game:
 
         return self.captain
 
+    def notify_captain(self):
+        self.chosing = True
+
+        return json.dumps({
+            "chosing": self.chosing,
+            "method": method.CHOSECAPTAIN,
+            "round": self.round,
+            "captain": self.captain})
+
     def chose_teamate(self, user_id, add_or_remove):
         if (add_or_remove and len(self.team) <
                 self.token_need["numbers"][self.round]):
@@ -98,20 +115,40 @@ class Game:
             if user_id in self.team:
                 self.team.remove(user_id)
 
-        response = {
-            "method": method.CHOSENTEAMATE,
-            "teamates": self.team}
+        response = json.dumps({"method": method.CHOSENTEAMATE,
+                               "teamates": self.team})
 
         return response
 
-    def has_finish_story(self):
-        return len(self.users) == self.story_finish
+    def confirmTeam(self):
+        self.chosing = False
+        self.confirming = True
 
-    def notify_captain(self):
         return json.dumps({
-            "method": method.CHOSECAPTAIN,
-            "round": self.round,
-            "captain": self.captain})
+            "method": method.ASKAPPROVAL,
+            "chosing": self.chosing,
+            "confirming": self.confirming,
+            "teamates": self.team})
+
+    def vote_approve(self, _id):
+        if _id not in self.approve:
+            self.approve.append(_id)
+        if _id in self.reject:
+            self.reject.remove(_id)
+
+        return json.dumps({
+            "method": method.VOTECONFIRM,
+            "voter": _id})
+
+    def vote_reject(self, _id):
+        if _id not in self.reject:
+            self.reject.append(_id)
+        if _id in self.approve:
+            self.approve.remove(_id)
+
+        return json.dumps({
+            "method": method.VOTECONFIRM,
+            "voter": _id})
 
     def disconnect(self, _id):
         try:
@@ -295,10 +332,10 @@ class SocketServer:
         if self.game.has_finish_story():
             self.game.chose_captain()
 
+            response = self.game.notify_captain()
             with (yield from self.lock):
                 for player in self.game.users:
-                    yield from self.players[player]["socket"].send(
-                        self.game.notify_captain())
+                    yield from self.players[player]["socket"].send(response)
 
     def CHOSETEAMATE(self, data, user_id, websocket):
         if user_id != self.game.captain:
@@ -309,9 +346,7 @@ class SocketServer:
 
         with (yield from self.lock):
             for player in self.game.users:
-                yield from self.players[player]["socket"].send(
-                    json.dumps(response))
-        print(response)
+                yield from self.players[player]["socket"].send(response)
 
     def UNCHOSETEAMATE(self, data, user_id, websocket):
         if user_id != self.game.captain:
@@ -322,8 +357,32 @@ class SocketServer:
 
         with (yield from self.lock):
             for player in self.game.users:
-                yield from self.players[player]["socket"].send(
-                    json.dumps(response))
+                yield from self.players[player]["socket"].send(response)
+
+    def COMFIRMTEAM(self, data, user_id, websocket):
+        if user_id != self.game.captain:
+            return
+
+        response = self.game.confirmTeam()
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
+
+    def APPROVE(self, data, user_id, websocket):
+        response = self.game.vote_approve(user_id)
+        print(response)
+
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
+
+    def REJECT(self, data, user_id, websocket):
+        response = self.game.vote_reject(user_id)
+        print(response)
+
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
 
 
 if __name__ == "__main__":

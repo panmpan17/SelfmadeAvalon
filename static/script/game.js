@@ -8,6 +8,9 @@ var role = null;
 var special_power = null;
 var hasPercival = false;
 
+var chosing = false;
+var confirming = false;
+
 var round = 0;
 var tokenNeed = null;
 var captain = null;
@@ -70,6 +73,9 @@ function clickPlayer(event) {
 				player_id = ele.id.replace("player-", "");
 
 				if (teamates.includes(player_id)) {
+					$("#black-bg").show();
+					$("#waiting").show();
+
 					// tell server remove player_id
 					socket.send(JSON.stringify({
 						method: Method.UNCHOSETEAMATE,
@@ -80,6 +86,9 @@ function clickPlayer(event) {
 					if (teamates.length >= tokenNeed["numbers"][round]) {
 						return;
 					}
+
+					$("#black-bg").show();
+					$("#waiting").show();
 
 					//  tell server add player_id
 					socket.send(JSON.stringify({
@@ -92,6 +101,28 @@ function clickPlayer(event) {
 			}
 		} catch(e) {}
 	});
+}
+
+function confirmTeam() {
+	if (captain != user_id) {
+		return;
+	}
+
+	if (teamates.length == tokenNeed["numbers"][round]) {
+		socket.send(JSON.stringify({method: Method.COMFIRMTEAM}));
+	}
+}
+
+function approveTeam() {
+	$("#black-bg").show();
+	$("#waiting").show();
+	socket.send(JSON.stringify({method: Method.APPROVE}));
+}
+
+function rejectTeam() {
+	$("#black-bg").show();
+	$("#waiting").show();
+	socket.send(JSON.stringify({method: Method.REJECT}));
 }
 
 function startHandleMethod() {
@@ -127,6 +158,7 @@ function startHandleMethod() {
 		else if (data.method == Method.CHOSECAPTAIN) {
 			captain = data.captain;
 			round = data.round;
+			chosing = data.chosing;
 
 			if ($("#captain")[0].children.length == 0) {
 				$("#captain")[0].append(images.captain);
@@ -154,6 +186,8 @@ function startHandleMethod() {
 			}
 		}
 		else if (data.method == Method.CHOSENTEAMATE) {
+			$("#black-bg").hide();
+			$("#waiting").hide();
 			teamates = data.teamates;
 
 			var teamatesNode = $(".teamate");
@@ -177,6 +211,64 @@ function startHandleMethod() {
 					top += 80;
 				}
 			});
+
+			if (teamates.length == tokenNeed["numbers"][round] && captain == user_id) {
+				// 
+				$("#confirm").show();
+				$("#confirm")[0].style.width = $("#upper img").width() + "px";
+				$("#confirm")[0].style.height = $("#upper img").height() + "px";
+			}
+			else {
+				$("#confirm").hide();
+			}
+		}
+		else if (data.method == Method.ASKAPPROVAL) {
+			chosing = data.chosing;
+			confirming = data.confirming;
+
+			// Make sure user see right teamates
+			teamates = data.teamates;
+
+			var teamatesNode = $(".teamate");
+			var top = 0;
+			$.each(teamatesNode, function(i, node) {
+				if (data.teamates[i] != undefined) {
+					node.style.top = $("#upper").height() + $(node).height() + "px";
+
+					var left = 0;
+					$.each($("#cards")[0].children, function(_, card) {
+						if (card.id == ("player-" + data.teamates[i])) {
+							node.style.left = left + ($(card).width() / 2) + "px";
+							return false;
+						}
+						left += $(card).width();
+					});
+				}
+				else {
+					node.style.top = top + "px";
+					node.style.left = 0;
+					top += 80;
+				}
+			});
+
+			// 
+			if ($("#approve")[0].children.length == 0) {
+				$("#approve")[0].append(images.approve);
+			}
+			if ($("#reject")[0].children.length == 0) {
+				$("#reject")[0].append(images.reject);
+			}
+
+			$("#vote").show();
+			$("#confirm").hide();
+		}
+		else if (data.method == Method.VOTECONFIRM) {
+			$("#black-bg").hide();
+			$("#waiting").hide();
+
+			if (data.voter == user_id) {
+				$("#vote").hide();
+			}
 		}
 	}
 }
