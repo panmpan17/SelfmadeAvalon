@@ -101,3 +101,12 @@
 	width: 60%;
 	padding: 20px 20%;
 }
+
+.teamate {
+	position: fixed;
+	top: 0;
+	left: 0;
+	border-radius: 20px;
+	height: 80px;
+	z-index: 10;
+}

@@ -46,6 +46,7 @@ class Game:
         self.story_finish = 0
         self.player_num = 0
 
+        self.users = []
         self.team = []
         self.token_need = []
         self.role_map = None
@@ -56,18 +57,18 @@ class Game:
         self.failed = 0
 
     def set_teams(self, players):
-        self.team.extend(players)
-        self.token_need = game_setting["token_need"][str(len(self.team))]
+        self.users.extend(players)
+        self.token_need = game_setting["token_need"][str(len(self.users))]
 
     def get_teams(self, players):
-        return [[players[i]["id"], players[i]["name"]] for i in self.team]
+        return [[players[i]["id"], players[i]["name"]] for i in self.users]
 
     def set_characters(self, players):
         characters = game_setting["character_set"][
-            str(len(self.team))].copy()
+            str(len(self.users))].copy()
         random.shuffle(characters)
 
-        self.role_map = dict(zip(self.team, characters))
+        self.role_map = dict(zip(self.users, characters))
 
         response = {
             "method": method.START,
@@ -78,27 +79,43 @@ class Game:
 
     def chose_captain(self):
         if self.captain is None:
-            self.captain = random.choice(self.team)
+            self.captain = random.choice(self.users)
         else:
-            cap_index = self.team.index(self.captain) + 1
-            if cap_index == len(self.team):
+            cap_index = self.users.index(self.captain) + 1
+            if cap_index == len(self.users):
                 cap_index = 0
 
-            self.captain = self.team[cap_index]
+            self.captain = self.users[cap_index]
 
         return self.captain
 
+    def chose_teamate(self, user_id, add_or_remove):
+        if (add_or_remove and len(self.team) <
+                self.token_need["numbers"][self.round]):
+            if user_id not in self.team:
+                self.team.append(user_id)
+        else:
+            if user_id in self.team:
+                self.team.remove(user_id)
+
+        response = {
+            "method": method.CHOSENTEAMATE,
+            "teamates": self.team}
+
+        return response
+
     def has_finish_story(self):
-        return len(self.team) == self.story_finish
+        return len(self.users) == self.story_finish
 
     def notify_captain(self):
         return json.dumps({
             "method": method.CHOSECAPTAIN,
+            "round": self.round,
             "captain": self.captain})
 
     def disconnect(self, _id):
         try:
-            self.team.remove(_id)
+            self.users.remove(_id)
         except Exception:
             pass
 
@@ -258,7 +275,7 @@ class SocketServer:
 
                 response = self.game.set_characters(self.players)
 
-                for player in self.game.team:
+                for player in self.game.users:
                     role = self.game.role_map[player]
                     self.players[player]["role"] = role
 
@@ -279,9 +296,34 @@ class SocketServer:
             self.game.chose_captain()
 
             with (yield from self.lock):
-                for player in self.game.team:
+                for player in self.game.users:
                     yield from self.players[player]["socket"].send(
-                        self.game.notify_captain)
+                        self.game.notify_captain())
+
+    def CHOSETEAMATE(self, data, user_id, websocket):
+        if user_id != self.game.captain:
+            return
+
+        data = self._checkdata(data, ("user_id", ))
+        response = self.game.chose_teamate(data.user_id, True)
+
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(
+                    json.dumps(response))
+        print(response)
+
+    def UNCHOSETEAMATE(self, data, user_id, websocket):
+        if user_id != self.game.captain:
+            return
+
+        data = self._checkdata(data, ("user_id", ))
+        response = self.game.chose_teamate(data.user_id, False)
+
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(
+                    json.dumps(response))
 
 
 if __name__ == "__main__":
