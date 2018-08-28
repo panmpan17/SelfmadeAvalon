@@ -308,12 +308,15 @@ function startHandleMethod() {
 				}
 
 				$("#mission").show();
+
+				if (role == "MERLIN" || role == "PERCIVAL" || role == "SERVANT") {
+					$("#fail").hide();
+				}
 			}
 			$("#vote").hide();
 			$(".vote").hide();
 		}
 		else if (data.method == Method.MISSIONCONFIRM) {
-			console.log(data)
 			$("#black-bg").hide();
 			$("#waiting").hide();
 
@@ -322,6 +325,20 @@ function startHandleMethod() {
 			}
 
 			$("#player-" + data.voter + " .foldedmission").show(300);
+		}
+		else if (data.method == Method.GAMERECORD) {
+			// display record under cards
+			if (data.record[round].resault.fail == 0) {
+				$("#tokens")[0].append(images.good_token.cloneNode());
+			}
+			else {
+				$("#tokens")[0].append(images.evil_token.cloneNode());
+			}
+
+			teamates = [];
+			data.round = data.round;
+			$(".foldedmission").hide(300);
+			$("#mission").hide(300);
 		}
 		else if (data.method == Method.END) {
 			$.each(data.role_map, function(id, role) {
@@ -341,6 +358,9 @@ function startHandleMethod() {
 				img.classList.add("character");
 				ele.append(img);
 			})
+		}
+		else {
+			console.log(data)
 		}
 	}
 }

@@ -58,6 +58,8 @@ class Game:
         self.success = []
         self.fail = []
 
+        self.record = {0: {"votes": []}}
+
         self.role_map = None
 
         self.chosing = False
@@ -101,8 +103,6 @@ class Game:
                 cap_index = 0
 
             self.captain = self.users[cap_index]
-
-        return self.captain
 
     def notify_captain(self):
         self.chosing = True
@@ -167,16 +167,11 @@ class Game:
         self.failed += 1
 
     def reset_votes(self):
+        self.record[self.round]["votes"].append(
+            {"approve": self.approve.copy(), "reject": self.reject.copy()})
+
         self.approve.clear()
         self.reject.clear()
-        self.team.clear()
-
-    def evil_win(self):
-        return json.dumps({
-            "method": method.END,
-            "tokens": self.tokens,
-            "failed": self.failed,
-            "role_map": self.role_map})
 
     def mission_success(self, _id):
         if _id not in self.success:
@@ -193,6 +188,33 @@ class Game:
             self.success.remove(_id)
 
         return json.dumps({"method": method.MISSIONCONFIRM, "voter": _id})
+
+    def all_executed(self):
+        if len(self.success) + len(self.fail) == len(self.team):
+            return len(self.fail) == 0
+        return None
+
+    def next_round(self):
+        self.record[self.round]["resault"] = {"success": len(self.success),
+                                              "fail": len(self.fail),
+                                              "team": self.team.copy()}
+
+        self.team.clear()
+        self.approve.clear()
+        self.reject.clear()
+        self.success.clear()
+        self.fail.clear()
+        self.round += 1
+        self.chose_captain()
+
+        self.record[self.round] = {"votes": []}
+
+    def evil_win(self):
+        return json.dumps({
+            "method": method.END,
+            "tokens": self.tokens,
+            "failed": self.failed,
+            "role_map": self.role_map})
 
     def disconnect(self, _id):
         try:
@@ -285,7 +307,6 @@ class SocketServer:
                     response = yield from self.__getattribute__(
                         data["method"])(data, user_id, websocket)
                 except AttributeError as e:
-                    print(e)
                     yield from websocket.send(json.dumps(
                         ErrMsg.DATA_PARSE_WRONG))
                     continue
@@ -478,6 +499,24 @@ class SocketServer:
                                      websocket)
 
     def success_fail(self, response, websocket):
+        resault = self.game.all_executed()
+
+        if resault is not None:
+            self.game.next_round()
+
+            with (yield from self.lock):
+                response = json.dumps({"method": method.GAMERECORD,
+                                       "record": self.game.record,
+                                       "round": self.game.round})
+
+                for player in self.game.users:
+                    yield from self.players[player]["socket"].send(response)
+
+                response = self.game.notify_captain()
+                for player in self.players:
+                    yield from self.players[player]["socket"].send(response)
+            return
+
         with (yield from self.lock):
             for player in self.game.users:
                 yield from self.players[player]["socket"].send(response)

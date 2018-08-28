@@ -68,6 +68,7 @@
         "SUCCESS",
         "FAIL",
         "MISSIONCONFIRM",
+        "GAMERECORD",
         "KILLMERLIN",
         "END"
     ]

@@ -71,6 +71,11 @@
 	width: 60%;
 	height: 90px;
 }
+
+#upper #board #tokens img {
+	width: 96px;
+}
+
 #upper #board #failed {
 	position: absolute;
 	left: 20%;
