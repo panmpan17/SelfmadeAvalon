@@ -41,7 +41,9 @@ function displayCard(players) {
 		div.id = "player-" + player[0];
 		div.onclick = clickPlayer;
 
-		div.append(images.unknown.cloneNode());
+		var img = images.unknown.cloneNode();
+		img.classList.add("character");
+		div.append(img);
 
 		$("#cards")[0].appendChild(div);
 	});
@@ -51,15 +53,18 @@ function displayMyself() {
 	var ele = $("#player-" + user_id)[0];
 	ele.removeChild(ele.children[0]);
 
+	var img = null;
 	if (role != "SERVANT" && role != "EVIL") {
-		ele.append(images["q_" + role.toLowerCase()].cloneNode());
+		img = images["q_" + role.toLowerCase()].cloneNode();
 	}
 	else if (role == "SERVANT") {
-		ele.append(images["q_" + role.toLowerCase() + "_" + random.randint(1, 5)].cloneNode());
+		img = images["q_" + role.toLowerCase() + "_" + random.randint(1, 5)].cloneNode();
 	}
 	else if (role == "EVIL") {
-		ele.append(images["q_" + role.toLowerCase() + "_" + random.randint(1, 2)].cloneNode());
+		img = images["q_" + role.toLowerCase() + "_" + random.randint(1, 2)].cloneNode();
 	}
+	img.classList.add("character");
+	ele.append(img);
 }
 
 function clickPlayer(event) {
@@ -160,20 +165,18 @@ function startHandleMethod() {
 			round = data.round;
 			chosing = data.chosing;
 
-			if ($("#captain")[0].children.length == 0) {
-				$("#captain")[0].append(images.captain);
-			}
-			
-			$("#captain")[0].style.top = $("#upper").height() + "px";
+			// Add captain img to every players
+			if ($(".captain").length == 0) {
+				$.each($("#cards")[0].children, function(_, card) {
+					var captain = images.captain.cloneNode();
+					captain.classList.add("captain");
 
-			var left = 0;
-			$.each($("#cards")[0].children, function(_, card) {
-				if (card.id == ("player-" + data.captain)) {
-					$("#captain")[0].style.left = left + ($(card).width() / 2) + "px";
-					return false;
-				}
-				left += $(card).width();
-			});
+					card.append(captain);
+				});
+			}
+
+			$(".captain").hide();
+			$("#player-" + data.captain + " .captain").show();
 
 			var top = 0;
 			for (var i=0;i<tokenNeed["numbers"][data.round];i++) {
@@ -226,6 +229,18 @@ function startHandleMethod() {
 			chosing = data.chosing;
 			confirming = data.confirming;
 
+			// Add voted indicator add to players
+			if ($(".vote").length == 0) {
+				$.each($("#cards")[0].children, function(_, card) {
+					var vote = images.vote.cloneNode();
+					vote.classList.add("vote");
+
+					card.append(vote);
+				});
+			}
+
+			$(".vote").hide();
+
 			// Make sure user see right teamates
 			teamates = data.teamates;
 
@@ -269,6 +284,8 @@ function startHandleMethod() {
 			if (data.voter == user_id) {
 				$("#vote").hide();
 			}
+
+			$("#player-" + data.voter + " .vote").show();
 		}
 	}
 }

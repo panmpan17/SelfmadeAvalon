@@ -24,8 +24,12 @@ function isEvil(role) {
 function evilSee() {
 	if (isEvil(role)) {
 		$.each(special_power, function(_, _id) {
+			var img = images.bad.cloneNode();
+						img.classList.add("character");
+						img.classList.add("character");
+
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(images.bad.cloneNode());
+			$("#player-" + _id)[0].append(img);
 			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
@@ -37,8 +41,11 @@ function evilSee() {
 function merlinSee() {
 	if (role == "MERLIN") {
 		$.each(special_power, function(_, _id) {
+			var img = images.bad.cloneNode();
+						img.classList.add("character");
+
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(images.bad.cloneNode());
+			$("#player-" + _id)[0].append(img);
 			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
@@ -51,8 +58,11 @@ function merlinSee() {
 function percivalSee() {
 	if (role == "PERCIVAL") {
 		$.each(special_power, function(_, _id) {
+			var img = images.q_morganamerlin.cloneNode();
+						img.classList.add("character");
+
 			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(images.q_morganamerlin.cloneNode());
+			$("#player-" + _id)[0].append(img);
 			$("#player-" + _id)[0].style.zIndex = 15;
 
 			setTimeout(function () {

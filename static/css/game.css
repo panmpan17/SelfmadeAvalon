@@ -64,6 +64,7 @@
 }
 
 #confirm {
+	display: none;
 	position: absolute;
 	background: rgba(0, 0, 0, 0.6);
 	margin: 20px 20%;
@@ -103,8 +104,21 @@
 	text-align: center;
 }
 
-.player-card img {
+.player-card img.character {
 	width: 80%;
+}
+
+.player-card img.captain, .player-card img.vote {
+	display: none;
+	position: absolute;
+	left: 0;
+	width: 50px;
+	border-radius: 20px;
+}
+
+.player-card img.vote {
+	width: 40px;
+	bottom: 0;
 }
 
 #captain {

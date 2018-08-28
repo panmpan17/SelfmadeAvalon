@@ -150,6 +150,11 @@ class Game:
             "method": method.VOTECONFIRM,
             "voter": _id})
 
+    def all_voted(self):
+        if len(self.approve) + len(self.reject) == len(self.users):
+            return len(self.approve) > len(self.reject)
+        return None
+
     def disconnect(self, _id):
         try:
             self.users.remove(_id)
@@ -370,19 +375,29 @@ class SocketServer:
 
     def APPROVE(self, data, user_id, websocket):
         response = self.game.vote_approve(user_id)
-        print(response)
 
-        with (yield from self.lock):
-            for player in self.game.users:
-                yield from self.players[player]["socket"].send(response)
+        yield from self.approve_reject(response, websocket)
 
     def REJECT(self, data, user_id, websocket):
         response = self.game.vote_reject(user_id)
-        print(response)
 
-        with (yield from self.lock):
-            for player in self.game.users:
-                yield from self.players[player]["socket"].send(response)
+        yield from self.approve_reject(response, websocket)
+
+    def approve_reject(self, response, websocket):
+        resault = self.game.all_voted()
+        if resault is not None:
+            yield from websocket.send(response)
+
+            if resault:
+                # Execute Mission
+                pass
+            else:
+                # Chose new captain
+                pass
+        else:
+            with (yield from self.lock):
+                for player in self.game.users:
+                    yield from self.players[player]["socket"].send(response)
 
 
 if __name__ == "__main__":
