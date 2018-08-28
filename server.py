@@ -48,6 +48,7 @@ class Game:
 
         self.users = []
         self.team = []
+        self.tokens = []
         self.token_need = []
         self.approve = []
         self.reject = []
@@ -99,10 +100,13 @@ class Game:
 
     def notify_captain(self):
         self.chosing = True
+        self.confirming = False
 
         return json.dumps({
-            "chosing": self.chosing,
             "method": method.CHOSECAPTAIN,
+            "chosing": self.chosing,
+            "confirming": self.confirming,
+            "failed": self.failed,
             "round": self.round,
             "captain": self.captain})
 
@@ -154,6 +158,21 @@ class Game:
         if len(self.approve) + len(self.reject) == len(self.users):
             return len(self.approve) > len(self.reject)
         return None
+
+    def vote_failed(self):
+        self.failed += 1
+
+    def reset_votes(self):
+        self.approve.clear()
+        self.reject.clear()
+        self.team.clear()
+
+    def evil_win(self):
+        return {
+            "method": method.END,
+            "tokens": self.tokens,
+            "failed": self.failed,
+            "role_map": self.role_map}
 
     def disconnect(self, _id):
         try:
@@ -385,19 +404,42 @@ class SocketServer:
 
     def approve_reject(self, response, websocket):
         resault = self.game.all_voted()
+
+        # Check is everyone voted
         if resault is not None:
             yield from websocket.send(response)
 
             if resault:
                 # Execute Mission
-                pass
-            else:
-                # Chose new captain
-                pass
-        else:
+                return
+
+            # Chose new captain
+            self.game.vote_failed()
+
+            if self.game.failed >= 5:
+                # Game over evils win
+                response = self.game.evil_win()
+
+                with (yield from self.lock):
+                    for player in self.game.users:
+                        yield from self.players[player]["socket"].send(
+                            response)
+
+                return
+
+            self.game.chose_captain()
+
+            response = self.game.notify_captain()
             with (yield from self.lock):
                 for player in self.game.users:
                     yield from self.players[player]["socket"].send(response)
+
+            self.game.reset_votes()
+            return
+
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
 
 
 if __name__ == "__main__":

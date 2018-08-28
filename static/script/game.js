@@ -68,6 +68,10 @@ function displayMyself() {
 }
 
 function clickPlayer(event) {
+	if (!chosing) {
+		return;
+	}
+
 	if (captain != user_id) {
 		return;
 	}
@@ -164,62 +168,55 @@ function startHandleMethod() {
 			captain = data.captain;
 			round = data.round;
 			chosing = data.chosing;
+			failed = data.failed;
+			confirming = false;
+			teamates = [];
 
-			// Add captain img to every players
+			// Add captain img and mission img to every players
 			if ($(".captain").length == 0) {
-				$.each($("#cards")[0].children, function(_, card) {
+				$.each($(".player-card"), function(_, card) {
 					var captain = images.captain.cloneNode();
 					captain.classList.add("captain");
 
 					card.append(captain);
+
+					var mission = images.mission.cloneNode();
+					mission.classList.add("teamates")
+
+					card.append(mission);
 				});
 			}
 
-			$(".captain").hide();
-			$("#player-" + data.captain + " .captain").show();
-
-			var top = 0;
-			for (var i=0;i<tokenNeed["numbers"][data.round];i++) {
-				var teamate = images.mission.cloneNode();
-				teamate.classList.add("teamate");
-
-				teamate.style.top = top + "px";
-				$("#team").append(teamate);
-				top += 80;
+			$("#failed").html("");
+			for (var i=0;i<data.failed;i++) {
+				$("#failed")[0].append(images.evil_token.cloneNode());
 			}
+
+			$(".captain").hide();
+			$(".teamates").hide();
+			$(".vote").hide();
+			$("#player-" + data.captain + " .captain").show();
 		}
 		else if (data.method == Method.CHOSENTEAMATE) {
 			$("#black-bg").hide();
 			$("#waiting").hide();
 			teamates = data.teamates;
 
-			var teamatesNode = $(".teamate");
-			var top = 0;
-			$.each(teamatesNode, function(i, node) {
-				if (data.teamates[i] != undefined) {
-					node.style.top = $("#upper").height() + $(node).height() + "px";
-
-					var left = 0;
-					$.each($("#cards")[0].children, function(_, card) {
-						if (card.id == ("player-" + data.teamates[i])) {
-							node.style.left = left + ($(card).width() / 2) + "px";
-							return false;
-						}
-						left += $(card).width();
-					});
+			$.each($(".player-card"), function(i, card) {
+				var id = card.id.replace("player-", "")
+				if (teamates.includes(id)) {
+					$("#player-" + id + " .teamates").show(300);
 				}
 				else {
-					node.style.top = top + "px";
-					node.style.left = 0;
-					top += 80;
+					$("#player-" + id + " .teamates").hide(300);
 				}
 			});
 
 			if (teamates.length == tokenNeed["numbers"][round] && captain == user_id) {
 				// 
 				$("#confirm").show();
-				$("#confirm")[0].style.width = $("#upper img").width() + "px";
-				$("#confirm")[0].style.height = $("#upper img").height() + "px";
+				$("#confirm")[0].style.width = $("#board > img").width() + "px";
+				$("#confirm")[0].style.height = $("#board > img").height() + "px";
 			}
 			else {
 				$("#confirm").hide();
@@ -231,7 +228,7 @@ function startHandleMethod() {
 
 			// Add voted indicator add to players
 			if ($(".vote").length == 0) {
-				$.each($("#cards")[0].children, function(_, card) {
+				$.each($(".player-card"), function(_, card) {
 					var vote = images.vote.cloneNode();
 					vote.classList.add("vote");
 
@@ -251,7 +248,7 @@ function startHandleMethod() {
 					node.style.top = $("#upper").height() + $(node).height() + "px";
 
 					var left = 0;
-					$.each($("#cards")[0].children, function(_, card) {
+					$.each($(".player-card"), function(_, card) {
 						if (card.id == ("player-" + data.teamates[i])) {
 							node.style.left = left + ($(card).width() / 2) + "px";
 							return false;
@@ -282,10 +279,10 @@ function startHandleMethod() {
 			$("#waiting").hide();
 
 			if (data.voter == user_id) {
-				$("#vote").hide();
+				$("#vote").hide(300);
 			}
 
-			$("#player-" + data.voter + " .vote").show();
+			$("#player-" + data.voter + " .vote").show(300);
 		}
 	}
 }

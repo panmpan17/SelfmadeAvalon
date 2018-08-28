@@ -59,11 +59,32 @@
 }
 
 #board {
+	position: relative;
 	width: 60%;
 	padding: 20px 20%;
 }
 
+#upper #board #tokens {
+	position: absolute;
+	left: 20%;
+	top: 110px;
+	width: 60%;
+	height: 90px;
+}
+#upper #board #failed {
+	position: absolute;
+	left: 20%;
+	top: 250px;
+	width: 60%;
+	height: 70px;
+}
+
+#upper #board #failed img {
+	width: 78px;
+}
+
 #confirm {
+	top: 0;
 	display: none;
 	position: absolute;
 	background: rgba(0, 0, 0, 0.6);
@@ -82,16 +103,6 @@
 	cursor: pointer;
 }
 
-#team .teamate {
-	position: fixed;
-	transition-duration: .4s;
-	top: 0;
-	left: 0;
-	border-radius: 20px;
-	height: 80px;
-	z-index: 10;
-}
-
 #cards {
 	display: flex;
 	flex-wrap: all;
@@ -108,7 +119,9 @@
 	width: 80%;
 }
 
-.player-card img.captain, .player-card img.vote {
+.player-card img.captain,
+.player-card img.vote,
+.player-card img.teamates {
 	display: none;
 	position: absolute;
 	left: 0;
@@ -118,6 +131,12 @@
 
 .player-card img.vote {
 	width: 40px;
+	bottom: 0;
+}
+
+.player-card img.teamates {
+	left: auto;
+	right: 0;
 	bottom: 0;
 }
 
