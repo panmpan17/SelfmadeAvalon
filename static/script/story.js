@@ -23,33 +23,32 @@ function isEvil(role) {
 
 function evilSee() {
 	if (isEvil(role)) {
-		$.each(special_power, function(_, _id) {
+		$.each(special_power, function(_, id) {
 			var img = images.bad.cloneNode();
-						img.classList.add("character");
-						img.classList.add("character");
+			img.classList.add("character");
 
-			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(img);
-			$("#player-" + _id)[0].style.zIndex = 15;
+			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
+			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
-				$("#player-" + _id)[0].style.zIndex = 9;
+				$("#player-" + id)[0].style.zIndex = 9;
 			}, STORYTIME);
 		});
 	}
 }
 function merlinSee() {
 	if (role == "MERLIN") {
-		$.each(special_power, function(_, _id) {
+		$.each(special_power, function(_, id) {
 			var img = images.bad.cloneNode();
-						img.classList.add("character");
+			img.classList.add("character");
 
-			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(img);
-			$("#player-" + _id)[0].style.zIndex = 15;
+			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
+			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
-				$("#player-" + _id)[0].style.zIndex = 9;
+				$("#player-" + id)[0].style.zIndex = 9;
 			}, STORYTIME - 250);
 		});
 	}
@@ -57,16 +56,16 @@ function merlinSee() {
 
 function percivalSee() {
 	if (role == "PERCIVAL") {
-		$.each(special_power, function(_, _id) {
+		$.each(special_power, function(_, id) {
 			var img = images.q_morganamerlin.cloneNode();
-						img.classList.add("character");
+			img.classList.add("character");
 
-			$("#player-" + _id)[0].removeChild($("#player-" + _id)[0].children[0]);
-			$("#player-" + _id)[0].append(img);
-			$("#player-" + _id)[0].style.zIndex = 15;
+			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
+			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
-				$("#player-" + _id)[0].style.zIndex = 9;
+				$("#player-" + id)[0].style.zIndex = 9;
 			}, STORYTIME - 250);
 		});
 	}

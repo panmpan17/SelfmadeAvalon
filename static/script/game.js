@@ -51,17 +51,17 @@ function displayCard(players) {
 
 function displayMyself() {
 	var ele = $("#player-" + user_id)[0];
-	ele.removeChild(ele.children[0]);
+	ele.removeChild($("#player-" + user_id + " .character")[0]);
 
 	var img = null;
 	if (role != "SERVANT" && role != "EVIL") {
 		img = images["q_" + role.toLowerCase()].cloneNode();
 	}
 	else if (role == "SERVANT") {
-		img = images["q_" + role.toLowerCase() + "_" + random.randint(1, 5)].cloneNode();
+		img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
 	}
 	else if (role == "EVIL") {
-		img = images["q_" + role.toLowerCase() + "_" + random.randint(1, 2)].cloneNode();
+		img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
 	}
 	img.classList.add("character");
 	ele.append(img);
@@ -187,7 +187,7 @@ function startHandleMethod() {
 				});
 			}
 
-			$("#failed").html("");
+			$("#failed")[0].innerHTML = "";
 			for (var i=0;i<data.failed;i++) {
 				$("#failed")[0].append(images.evil_token.cloneNode());
 			}
@@ -273,6 +273,9 @@ function startHandleMethod() {
 
 			$("#vote").show();
 			$("#confirm").hide();
+
+			// Automatically vote reject
+			rejectTeam();
 		}
 		else if (data.method == Method.VOTECONFIRM) {
 			$("#black-bg").hide();
@@ -283,6 +286,25 @@ function startHandleMethod() {
 			}
 
 			$("#player-" + data.voter + " .vote").show(300);
+		}
+		else if (data.method == Method.END) {
+			$.each(data.role_map, function(id, role) {
+				var ele = $("#player-" + id)[0];
+				ele.removeChild($("#player-" + id + " .character")[0]);
+
+				var img = null;
+				if (role != "SERVANT" && role != "EVIL") {
+					img = images["q_" + role.toLowerCase()].cloneNode();
+				}
+				else if (role == "SERVANT") {
+					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
+				}
+				else if (role == "EVIL") {
+					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
+				}
+				img.classList.add("character");
+				ele.append(img);
+			})
 		}
 	}
 }

@@ -168,11 +168,11 @@ class Game:
         self.team.clear()
 
     def evil_win(self):
-        return {
+        return json.dumps({
             "method": method.END,
             "tokens": self.tokens,
             "failed": self.failed,
-            "role_map": self.role_map}
+            "role_map": self.role_map})
 
     def disconnect(self, _id):
         try:

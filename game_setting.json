@@ -69,6 +69,6 @@
         "FAIL",
         "SUCCESS",
         "KILLMERLIN",
-        "END",
+        "END"
     ]
 }
