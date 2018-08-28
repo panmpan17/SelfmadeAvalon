@@ -47,11 +47,17 @@ class Game:
         self.player_num = 0
 
         self.users = []
+
         self.team = []
+
         self.tokens = []
         self.token_need = []
         self.approve = []
         self.reject = []
+
+        self.success = []
+        self.fail = []
+
         self.role_map = None
 
         self.chosing = False
@@ -150,9 +156,7 @@ class Game:
         if _id in self.approve:
             self.approve.remove(_id)
 
-        return json.dumps({
-            "method": method.VOTECONFIRM,
-            "voter": _id})
+        return json.dumps({"method": method.VOTECONFIRM, "voter": _id})
 
     def all_voted(self):
         if len(self.approve) + len(self.reject) == len(self.users):
@@ -173,6 +177,22 @@ class Game:
             "tokens": self.tokens,
             "failed": self.failed,
             "role_map": self.role_map})
+
+    def mission_success(self, _id):
+        if _id not in self.success:
+            self.success.append(_id)
+        if _id in self.fail:
+            self.fail.remove(_id)
+
+        return json.dumps({"method": method.MISSIONCONFIRM, "voter": _id})
+
+    def mission_fail(self, _id):
+        if _id not in self.fail:
+            self.fail.append(_id)
+        if _id in self.success:
+            self.success.remove(_id)
+
+        return json.dumps({"method": method.MISSIONCONFIRM, "voter": _id})
 
     def disconnect(self, _id):
         try:
@@ -393,24 +413,32 @@ class SocketServer:
                 yield from self.players[player]["socket"].send(response)
 
     def APPROVE(self, data, user_id, websocket):
-        response = self.game.vote_approve(user_id)
-
-        yield from self.approve_reject(response, websocket)
+        yield from self.approve_reject(self.game.vote_approve(
+            user_id), websocket)
 
     def REJECT(self, data, user_id, websocket):
-        response = self.game.vote_reject(user_id)
-
-        yield from self.approve_reject(response, websocket)
+        yield from self.approve_reject(self.game.vote_reject(
+            user_id), websocket)
 
     def approve_reject(self, response, websocket):
         resault = self.game.all_voted()
 
         # Check is everyone voted
         if resault is not None:
-            yield from websocket.send(response)
-
             if resault:
                 # Execute Mission
+                with (yield from self.lock):
+                    response = {"method": method.ASKSUCCESS, "teamate": False}
+                    for player in self.game.users:
+                        if player in self.game.team:
+                            response["teamate"] = True
+                            yield from self.players[player]["socket"].send(
+                                json.dumps(response))
+                            continue
+
+                        response["teamate"] = False
+                        yield from self.players[player]["socket"].send(
+                            json.dumps(response))
                 return
 
             # Chose new captain
@@ -437,6 +465,19 @@ class SocketServer:
             self.game.reset_votes()
             return
 
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
+
+    def SUCCESS(self, data, user_id, websocket):
+        yield from self.success_fail(self.game.mission_success(user_id),
+                                     websocket)
+
+    def FAIL(self, data, user_id, websocket):
+        yield from self.success_fail(self.game.mission_fail(user_id),
+                                     websocket)
+
+    def success_fail(self, response, websocket):
         with (yield from self.lock):
             for player in self.game.users:
                 yield from self.players[player]["socket"].send(response)

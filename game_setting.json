@@ -64,10 +64,10 @@
         "CHOSENTEAMATE",
         "ASKAPPROVAL",
         "VOTECONFIRM",
-        "ASSEMBLEFAIL",
         "ASKSUCCESS",
-        "FAIL",
         "SUCCESS",
+        "FAIL",
+        "MISSIONCONFIRM",
         "KILLMERLIN",
         "END"
     ]

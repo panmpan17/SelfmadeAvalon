@@ -134,6 +134,17 @@ function rejectTeam() {
 	socket.send(JSON.stringify({method: Method.REJECT}));
 }
 
+function missionSuccess() {
+	$("#black-bg").show();
+	$("#waiting").show();
+	socket.send(JSON.stringify({method: Method.SUCCESS}));
+}
+function missionFail() {
+	$("#black-bg").show();
+	$("#waiting").show();
+	socket.send(JSON.stringify({method: Method.FAIL}));
+}
+
 function startHandleMethod() {
 	socket.onmessage = function (event) {
 		data = JSON.parse(event.data);
@@ -172,18 +183,25 @@ function startHandleMethod() {
 			confirming = false;
 			teamates = [];
 
-			// Add captain img and mission img to every players
+			// Add captain, teamate, foldedmission vote img to every players
 			if ($(".captain").length == 0) {
 				$.each($(".player-card"), function(_, card) {
 					var captain = images.captain.cloneNode();
 					captain.classList.add("captain");
 
+					var teamate = images.mission.cloneNode();
+					teamate.classList.add("teamates")
+
+					var vote = images.vote.cloneNode();
+					vote.classList.add("vote");
+
+					var foldedmission = images.foldedmission.cloneNode();
+					foldedmission.classList.add("foldedmission");
+
 					card.append(captain);
-
-					var mission = images.mission.cloneNode();
-					mission.classList.add("teamates")
-
-					card.append(mission);
+					card.append(teamate);
+					card.append(vote);
+					card.append(foldedmission);
 				});
 			}
 
@@ -192,9 +210,13 @@ function startHandleMethod() {
 				$("#failed")[0].append(images.evil_token.cloneNode());
 			}
 
+			$("#black-bg").hide();
+			$("#waiting").hide();
+			$("#vote").hide();
 			$(".captain").hide();
 			$(".teamates").hide();
 			$(".vote").hide();
+			$(".foldedmission").hide();
 			$("#player-" + data.captain + " .captain").show();
 		}
 		else if (data.method == Method.CHOSENTEAMATE) {
@@ -225,18 +247,6 @@ function startHandleMethod() {
 		else if (data.method == Method.ASKAPPROVAL) {
 			chosing = data.chosing;
 			confirming = data.confirming;
-
-			// Add voted indicator add to players
-			if ($(".vote").length == 0) {
-				$.each($(".player-card"), function(_, card) {
-					var vote = images.vote.cloneNode();
-					vote.classList.add("vote");
-
-					card.append(vote);
-				});
-			}
-
-			$(".vote").hide();
 
 			// Make sure user see right teamates
 			teamates = data.teamates;
@@ -271,11 +281,12 @@ function startHandleMethod() {
 				$("#reject")[0].append(images.reject);
 			}
 
+			$(".vote").hide();
 			$("#vote").show();
 			$("#confirm").hide();
 
 			// Automatically vote reject
-			rejectTeam();
+			approveTeam();
 		}
 		else if (data.method == Method.VOTECONFIRM) {
 			$("#black-bg").hide();
@@ -286,6 +297,31 @@ function startHandleMethod() {
 			}
 
 			$("#player-" + data.voter + " .vote").show(300);
+		}
+		else if (data.method == Method.ASKSUCCESS) {
+			if (data.teamate) {
+				if ($("#success")[0].children.length == 0) {
+					$("#success")[0].append(images.success);
+				}
+				if ($("#fail")[0].children.length == 0) {
+					$("#fail")[0].append(images.fail);
+				}
+
+				$("#mission").show();
+			}
+			$("#vote").hide();
+			$(".vote").hide();
+		}
+		else if (data.method == Method.MISSIONCONFIRM) {
+			console.log(data)
+			$("#black-bg").hide();
+			$("#waiting").hide();
+
+			if (data.voter == user_id) {
+				$("#mission").hide(300);
+			}
+
+			$("#player-" + data.voter + " .foldedmission").show(300);
 		}
 		else if (data.method == Method.END) {
 			$.each(data.role_map, function(id, role) {
