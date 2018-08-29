@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import logging
 import json
 import asyncio
 import asyncws
@@ -7,7 +8,7 @@ import random
 import string
 
 PLAYERLIMIT = 10
-REQUIRE_TO_START = 7
+REQUIRE_TO_START = 5
 
 
 class Method:
@@ -20,7 +21,7 @@ class Method:
 game_setting = json.load(open("game_setting.json"))
 method = Method(game_setting["method"])
 
-SECRET = "mlpn"
+SECRET = "mime"
 
 
 class Dull:
@@ -66,8 +67,6 @@ class Game:
         self.confirming = False
 
         self.round = 0
-        self.good = 0
-        self.evil = 0
         self.failed = 0
 
     def set_teams(self, players):
@@ -191,13 +190,23 @@ class Game:
 
     def all_executed(self):
         if len(self.success) + len(self.fail) == len(self.team):
-            return len(self.fail) == 0
+            return True
         return None
 
     def next_round(self):
-        self.record[self.round]["resault"] = {"success": len(self.success),
-                                              "fail": len(self.fail),
-                                              "team": self.team.copy()}
+        self.record[self.round]["resault"] = {
+            "success": len(self.success), "fail": len(self.fail),
+            "team": self.team.copy()}
+
+        if self.token_need["two_fail"] == self.round and len(self.fail) <= 1:
+            self.tokens.append(1)
+            self.record[self.round]["resault"]["good_evil"] = "good"
+        if len(self.fail) > 0:
+            self.tokens.append(-1)
+            self.record[self.round]["resault"]["good_evil"] = "evil"
+        else:
+            self.tokens.append(1)
+            self.record[self.round]["resault"]["good_evil"] = "good"
 
         self.team.clear()
         self.approve.clear()
@@ -209,12 +218,26 @@ class Game:
 
         self.record[self.round] = {"votes": []}
 
-    def evil_win(self):
-        return json.dumps({
-            "method": method.END,
-            "tokens": self.tokens,
-            "failed": self.failed,
-            "role_map": self.role_map})
+        if self.tokens.count(1) == 3:
+            evils_role_map = {}
+
+            for _id, role in self.role_map.items():
+                if role in ["MORDRED", "MORGANA", "ASSASSIN", "EVIL"]:
+                    evils_role_map[_id] = role
+            return json.dumps({"method": method.KILLMERLIN,
+                               "evils_role_map": evils_role_map})
+        elif self.tokens.count(-1) == 3:
+            return self.evil_win()
+
+    def evil_win(self, add_token=True):
+        return json.dumps({"method": method.END, "tokens": self.tokens,
+                           "add_token": add_token, "failed": self.failed,
+                           "role_map": self.role_map, "win": "evil"})
+
+    def good_win(self):
+        return json.dumps({"method": method.END, "tokens": self.tokens,
+                           "failed": self.failed, "role_map": self.role_map,
+                           "win": "good"})
 
     def disconnect(self, _id):
         try:
@@ -299,6 +322,7 @@ class SocketServer:
 
             try:
                 if "method" not in data:
+                    logging.exception("Oops, seem like handler has gone wrong")
                     yield from websocket.send(json.dumps(
                         ErrMsg.DATA_PARSE_WRONG))
                     continue
@@ -307,17 +331,18 @@ class SocketServer:
                     response = yield from self.__getattribute__(
                         data["method"])(data, user_id, websocket)
                 except AttributeError as e:
+                    logging.exception("Oops, seem like handler has gone wrong")
                     yield from websocket.send(json.dumps(
                         ErrMsg.DATA_PARSE_WRONG))
                     continue
 
-                # # shutdown connection if close in response
+                # shutdown connection if close in response
                 if response == "close":
                     yield from websocket.close()
                     return
 
             except Exception as e:
-                print("Handle gone wrong: ", e)
+                logging.exception("Oops, seem like handler has gone wrong")
 
     def LOGIN(self, data, user_id, websocket):
         data = self._checkdata(data, ("name", "secret"))
@@ -362,10 +387,10 @@ class SocketServer:
                         "method": method.NEEDREADY}))
 
     def READY(self, data, user_id, websocket):
-        # response = {"method": method.CONFIRMREADY, "success": True}
         yield from websocket.send(json.dumps({"method": method.CONFIRMREADY,
                                               "success": True}))
 
+        print(self.players, self.waiting)
         with (yield from self.lock):
             self.players[user_id]["ready"] = True
 
@@ -467,7 +492,7 @@ class SocketServer:
 
             if self.game.failed >= 5:
                 # Game over evils win
-                response = self.game.evil_win()
+                response = self.game.evil_win(add_token=False)
 
                 with (yield from self.lock):
                     for player in self.game.users:
@@ -502,7 +527,12 @@ class SocketServer:
         resault = self.game.all_executed()
 
         if resault is not None:
-            self.game.next_round()
+            resault = self.game.next_round()
+            if resault is not None:
+                with (yield from self.lock):
+                    for player in self.game.users:
+                        yield from self.players[player]["socket"].send(resault)
+                return
 
             with (yield from self.lock):
                 response = json.dumps({"method": method.GAMERECORD,
@@ -521,7 +551,24 @@ class SocketServer:
             for player in self.game.users:
                 yield from self.players[player]["socket"].send(response)
 
+    def ASSASSIN(self, data, user_id, websocket):
+        if self.game.role_map[user_id] != "ASSASSIN":
+            return
+
+        data = self._checkdata(data, ("user_id", ))
+        if self.game.role_map[data.user_id] == "MERLIN":
+            response = self.game.evil_win(add_token=False)
+            with (yield from self.lock):
+                for player in self.game.users:
+                    yield from self.players[player]["socket"].send(response)
+            return
+
+        response = self.game.good_win()
+        with (yield from self.lock):
+            for player in self.game.users:
+                yield from self.players[player]["socket"].send(response)
+
 
 if __name__ == "__main__":
     server = SocketServer()
-    server.run("127.0.0.1", 8000)
+    server.run("0.0.0.0", 8000)

@@ -28,13 +28,18 @@ function evilSee() {
 			img.classList.add("character");
 
 			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
-			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].insertBefore(img, $("#player-" + id + " .name")[0]);
 			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
 				$("#player-" + id)[0].style.zIndex = 9;
 			}, STORYTIME);
 		});
+
+		$("#player-" + user_id)[0].style.zIndex = 15;
+		setTimeout(function () {
+			$("#player-" + user_id)[0].style.zIndex = 9;
+		}, STORYTIME);
 	}
 }
 function merlinSee() {
@@ -44,7 +49,7 @@ function merlinSee() {
 			img.classList.add("character");
 
 			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
-			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].insertBefore(img, $("#player-" + id + " .name")[0]);
 			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
@@ -61,7 +66,7 @@ function percivalSee() {
 			img.classList.add("character");
 
 			$("#player-" + id)[0].removeChild($("#player-" + id + " .character")[0]);
-			$("#player-" + id)[0].append(img);
+			$("#player-" + id)[0].insertBefore(img, $("#player-" + id + " .name")[0]);
 			$("#player-" + id)[0].style.zIndex = 15;
 
 			setTimeout(function () {
@@ -84,6 +89,7 @@ function playeStory() {
 
 	timewait = 500;
 	$.each(STORY.BASIC, function(_, story) {
+
 		setTimeout(function() {
 			$("#story #text")[0].innerHTML = story.text;
 
@@ -92,6 +98,10 @@ function playeStory() {
 			}
 		}, timewait);
 		timewait += STORYTIME;
+
+		setTimeout(function() {
+			$("#story #text")[0].innerHTML = "";
+		}, timewait - 250);
 	});
 
 	if (hasPercival) {
@@ -106,6 +116,10 @@ function playeStory() {
 			timewait += STORYTIME;
 		});
 		timewait += STORYTIME;
+		
+		setTimeout(function() {
+			$("#story #text")[0].innerHTML = "";
+		}, timewait - 250);
 	}
 
 	setTimeout(function() {

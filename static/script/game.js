@@ -8,8 +8,10 @@ var role = null;
 var special_power = null;
 var hasPercival = false;
 
+var assassin = false;
 var chosing = false;
 var confirming = false;
+var record = null;
 
 var round = 0;
 var tokenNeed = null;
@@ -35,15 +37,26 @@ function ready() {
 }
 
 function displayCard(players) {
-	$.each(players, function(_, player) {
+	$.each(players, function(i, player) {
 		var div = $("<div>")[0];
 		div.classList.add("player-card");
 		div.id = "player-" + player[0];
 		div.onclick = clickPlayer;
 
+		var num = $("<div>")[0];
+		num.innerHTML = i + 1;
+		num.classList.add("number");
+
 		var img = images.unknown.cloneNode();
 		img.classList.add("character");
-		div.append(img);
+		
+		var name = $("<div>")[0];
+		name.innerHTML = player[1];
+		name.classList.add("name");
+
+		div.appendChild(num);
+		div.appendChild(img);
+		div.appendChild(name);
 
 		$("#cards")[0].appendChild(div);
 	});
@@ -64,22 +77,35 @@ function displayMyself() {
 		img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
 	}
 	img.classList.add("character");
-	ele.append(img);
+	ele.insertBefore(img, $("#player-" + user_id + " .name")[0]);
 }
 
 function clickPlayer(event) {
-	if (!chosing) {
+	if (assassin && role == "ASSASSIN") {
+		$.each(event.path, function(_, ele) {
+			try {
+				if (ele.classList.contains("player-card")) {
+					var player_id = ele.id.replace("player-", "");
+
+					// 刺殺梅林
+					socket.send(JSON.stringify({
+						method: Method.ASSASSIN,
+						user_id: player_id,
+					}));
+				}
+			} catch (e) {}
+		});
 		return;
 	}
 
-	if (captain != user_id) {
+	if (!chosing || captain != user_id) {
 		return;
 	}
 
 	$.each(event.path, function(_, ele) {
 		try {
 			if (ele.classList.contains("player-card")) {
-				player_id = ele.id.replace("player-", "");
+				var player_id = ele.id.replace("player-", "");
 
 				if (teamates.includes(player_id)) {
 					$("#black-bg").show();
@@ -169,7 +195,7 @@ function startHandleMethod() {
 			players_num = data.players.length;
 			tokenNeed = data.token_need;
 
-			$("#board")[0].append(images["b" + players_num]);
+			$("#board")[0].appendChild(images["b" + players_num]);
 
 			displayCard(data.players);
 			displayMyself();
@@ -198,26 +224,28 @@ function startHandleMethod() {
 					var foldedmission = images.foldedmission.cloneNode();
 					foldedmission.classList.add("foldedmission");
 
-					card.append(captain);
-					card.append(teamate);
-					card.append(vote);
-					card.append(foldedmission);
+					card.appendChild(captain);
+					card.appendChild(teamate);
+					card.appendChild(vote);
+					card.appendChild(foldedmission);
 				});
 			}
 
 			$("#failed")[0].innerHTML = "";
 			for (var i=0;i<data.failed;i++) {
-				$("#failed")[0].append(images.evil_token.cloneNode());
+				$("#failed")[0].appendChild(images.evil_token.cloneNode());
 			}
 
-			$("#black-bg").hide();
-			$("#waiting").hide();
-			$("#vote").hide();
-			$(".captain").hide();
-			$(".teamates").hide();
-			$(".vote").hide();
-			$(".foldedmission").hide();
-			$("#player-" + data.captain + " .captain").show();
+			setTimeout(function() {
+				$("#black-bg").hide();
+				$("#waiting").hide();
+				$("#vote").hide();
+				$(".captain").hide();
+				$(".teamates").hide();
+				$(".vote").hide();
+				$(".foldedmission").hide();
+				$("#player-" + data.captain + " .captain").show();
+			}, 1000);
 		}
 		else if (data.method == Method.CHOSENTEAMATE) {
 			$("#black-bg").hide();
@@ -251,34 +279,22 @@ function startHandleMethod() {
 			// Make sure user see right teamates
 			teamates = data.teamates;
 
-			var teamatesNode = $(".teamate");
-			var top = 0;
-			$.each(teamatesNode, function(i, node) {
-				if (data.teamates[i] != undefined) {
-					node.style.top = $("#upper").height() + $(node).height() + "px";
-
-					var left = 0;
-					$.each($(".player-card"), function(_, card) {
-						if (card.id == ("player-" + data.teamates[i])) {
-							node.style.left = left + ($(card).width() / 2) + "px";
-							return false;
-						}
-						left += $(card).width();
-					});
+			$.each($(".player-card"), function(i, card) {
+				var id = card.id.replace("player-", "")
+				if (teamates.includes(id)) {
+					$("#player-" + id + " .teamates").show(300);
 				}
 				else {
-					node.style.top = top + "px";
-					node.style.left = 0;
-					top += 80;
+					$("#player-" + id + " .teamates").hide(300);
 				}
 			});
 
 			// 
 			if ($("#approve")[0].children.length == 0) {
-				$("#approve")[0].append(images.approve);
+				$("#approve")[0].appendChild(images.approve);
 			}
 			if ($("#reject")[0].children.length == 0) {
-				$("#reject")[0].append(images.reject);
+				$("#reject")[0].appendChild(images.reject);
 			}
 
 			$(".vote").hide();
@@ -286,7 +302,7 @@ function startHandleMethod() {
 			$("#confirm").hide();
 
 			// Automatically vote reject
-			approveTeam();
+			// approveTeam();
 		}
 		else if (data.method == Method.VOTECONFIRM) {
 			$("#black-bg").hide();
@@ -301,10 +317,10 @@ function startHandleMethod() {
 		else if (data.method == Method.ASKSUCCESS) {
 			if (data.teamate) {
 				if ($("#success")[0].children.length == 0) {
-					$("#success")[0].append(images.success);
+					$("#success")[0].appendChild(images.success);
 				}
 				if ($("#fail")[0].children.length == 0) {
-					$("#fail")[0].append(images.fail);
+					$("#fail")[0].appendChild(images.fail);
 				}
 
 				$("#mission").show();
@@ -315,6 +331,8 @@ function startHandleMethod() {
 			}
 			$("#vote").hide();
 			$(".vote").hide();
+			$("#black-bg").hide();
+			$("#waiting").hide();
 		}
 		else if (data.method == Method.MISSIONCONFIRM) {
 			$("#black-bg").hide();
@@ -328,17 +346,57 @@ function startHandleMethod() {
 		}
 		else if (data.method == Method.GAMERECORD) {
 			// display record under cards
-			if (data.record[round].resault.fail == 0) {
-				$("#tokens")[0].append(images.good_token.cloneNode());
+			record = data.record;
+			if (data.record[round].resault.good_evil == "good") {
+				$("#tokens")[0].appendChild(images.good_token.cloneNode());
 			}
 			else {
-				$("#tokens")[0].append(images.evil_token.cloneNode());
+				$("#tokens")[0].appendChild(images.evil_token.cloneNode());
 			}
 
 			teamates = [];
 			data.round = data.round;
 			$(".foldedmission").hide(300);
 			$("#mission").hide(300);
+		}
+		else if (data.method == Method.KILLMERLIN) {
+			assassin = true;
+
+			$.each(data.evils_role_map, function(id, role) {
+				var ele = $("#player-" + id)[0];
+				ele.removeChild($("#player-" + id + " .character")[0]);
+
+				var img = null;
+				if (role != "EVIL") {
+					img = images["q_" + role.toLowerCase()].cloneNode();
+				}
+				else if (role == "EVIL") {
+					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
+				}
+				img.classList.add("character");
+				ele.appendChild(img);
+			});
+
+			$("#tokens")[0].appendChild(images.good_token.cloneNode());
+
+			if (role == "ASSASSIN") {
+				$("#black-bg").show(300);
+				$("#assassin-merlin").show(300);
+
+				setTimeout(function() {
+					$("#black-bg").hide(50);
+					$("#assassin-merlin").hide(50);
+				}, STORYTIME);
+			}
+
+			setTimeout(function() {
+				$("#vote").hide();
+				$("#mission").hide();
+				$(".captain").hide();
+				$(".foldedmission").hide();
+				$(".vote").hide();
+				$(".teamates").hide();
+			}, 1000);
 		}
 		else if (data.method == Method.END) {
 			$.each(data.role_map, function(id, role) {
@@ -356,8 +414,28 @@ function startHandleMethod() {
 					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
 				}
 				img.classList.add("character");
-				ele.append(img);
-			})
+				ele.appendChild(img);
+			});
+
+			if (data.add_token == 1) {
+				$("#tokens")[0].appendChild(images.evil_token.cloneNode());
+			}
+
+			setTimeout(function() {
+				$("#vote").hide();
+				$("#mission").hide();
+				$(".captain").hide();
+				$(".foldedmission").hide();
+				$(".vote").hide();
+				$(".teamates").hide();
+			}, 1000);
+			
+			if (data.win == "good") {
+				alert("好人獲勝");
+			}
+			else {
+				alert("壞人獲勝");
+			}
 		}
 		else {
 			console.log(data)
@@ -382,7 +460,7 @@ $(document).ready(function() {
 
 			// Automatically Join
 			$("#name")[0].value = random.randint(1,100);
-			$("#secret")[0].value = "mlpn";
+			$("#secret")[0].value = "mime";
 			login();
 		}
 	});

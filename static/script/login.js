@@ -15,7 +15,7 @@ function login () {
 		return;
 	}
 
-	socket = new WebSocket("ws://localhost:8000");
+	socket = new WebSocket("ws://" + window.location.hostname + ":8000");
 	$("#black-bg").show(300);
 	$("#waiting").show(300);
 

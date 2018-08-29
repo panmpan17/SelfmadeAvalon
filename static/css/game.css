@@ -115,9 +115,23 @@
 
 .player-card {
 	position: relative;
+	cursor: pointer;
 	z-index: 9;
 	width: 150px;
 	text-align: center;
+}
+
+.player-card {
+	color: white;
+}
+
+.player-card .number {
+	font-size: 24px;
+	color: cornflowerblue;
+}
+
+.player-card .name {
+	font-size: 24px;
 }
 
 .player-card img.character {
@@ -131,19 +145,20 @@
 	display: none;
 	position: absolute;
 	left: 0;
+	top: 30px;
 	width: 50px;
 	border-radius: 20px;
 }
 
 .player-card img.vote {
 	width: 40px;
-	bottom: 0;
+	top: 160px;
 }
 
 .player-card img.teamates {
 	left: auto;
 	right: 0;
-	bottom: 0;
+	top: 160px;
 }
 
 .player-card img.foldedmission {
@@ -170,12 +185,23 @@
 	right: 0;
 	top: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, .3);
+	background: rgba(0, 0, 0, .6);
 	z-index: 12;
 }
 
+#vote, #mission {
+	background: rgba(0, 0, 0, .3);
+}
+
 #story #text {
+	position: fixed;
+	height: 200px;
+	width: 100%;
+	line-height: 200px;
+	top: calc(50% - 100px);
+	text-align: center;
 	color: white;
+	font-size: 36px;
 }
 
 #vote #approve,
@@ -201,8 +227,21 @@
 }
 
 #vote #approve:hover img,
-#vote #reject:hover img.
+#vote #reject:hover img,
 #mission #success:hover img,
 #mission #fail:hover img {
 	outline: 25px solid rgb(200, 200, 255, .6);
+}
+
+#assassin-merlin {
+	position: fixed;
+	left: calc(50% - 100px);
+	top: calc(50% - 40px);
+
+	width: 200px;
+	height: 80px;
+	line-height: 80px;
+	font-size: 36px;
+	color: tomato;
+	display: none;
 }

@@ -10,6 +10,7 @@
         "EVIL"
     ],
     "character_set": {
+        "2": ["MERLIN", "ASSASSIN"],
         "5": ["MERLIN", "SERVANT", "SERVANT", "MORDRED", "ASSASSIN"],
         "6": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "ASSASSIN", "MORGANA"],
         "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
@@ -18,6 +19,7 @@
         "10": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN", "EVIL"]
     },
     "token_need": {
+        "2": {"numbers": [1,1,1,1,1], "two_fail": null},
         "5": {"numbers": [2, 3, 2, 3, 3], "two_fail": null},
         "6": {"numbers": [2, 3, 4, 3, 4], "two_fail": null},
         "7": {"numbers": [2, 3, 3, 4, 4], "two_fail": 3},
@@ -50,7 +52,7 @@
         "SUCCESS",
         "FAIL",
         "LAKE",
-        "ASSASIN",
+        "ASSASSIN",
 
         "VARIFYFAIL",
         "PLAYERJOIN",
