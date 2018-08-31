@@ -103,16 +103,12 @@ function clickPlayer(event) {
 		return;
 	}
 
-	console.log(event.path, event)
 	$.each(event.path, function(_, ele) {
 		try {
-			console.log(2)
 			if (ele.classList.contains("player-card")) {
 				var player_id = ele.id.replace("player-", "");
 
-				console.log(3)
 				if (teamates.includes(player_id)) {
-					console.log(4)
 					$("#black-bg").show();
 					$("#waiting").show();
 
@@ -123,7 +119,6 @@ function clickPlayer(event) {
 					}));
 				}
 				else {
-					console.log(5)
 					if (teamates.length >= tokenNeed["numbers"][round]) {
 						return;
 					}
@@ -195,7 +190,6 @@ function startHandleMethod() {
 			// ready();
 		}
 		else if (data.method == Method.CONFIRMREADY) {
-			console.log(data)
 			if (data.user == user_id) {
 				$("#ready")[0].classList.add("active");
 			}
@@ -302,9 +296,11 @@ function startHandleMethod() {
 				var id = card.id.replace("player-", "")
 				if (teamates.includes(id)) {
 					$("#player-" + id + " .teamates").show(300);
+					$("#player-" + id)[0].style.zIndex = 15;
 				}
 				else {
 					$("#player-" + id + " .teamates").hide(300);
+					$("#player-" + id)[0].style.zIndex = 9;
 				}
 			});
 
@@ -348,22 +344,26 @@ function startHandleMethod() {
 					$("#fail").hide();
 				}
 			}
+
 			$("#vote").hide();
 			$(".vote").hide();
 			$("#black-bg").hide();
 			$("#waiting").hide();
 		}
 		else if (data.method == Method.MISSIONCONFIRM) {
-			$("#black-bg").hide();
-			$("#waiting").hide();
-
 			if (data.voter == user_id) {
+				$("#black-bg").hide();
+				$("#waiting").hide();
 				$("#mission").hide(300);
 			}
 
 			$("#player-" + data.voter + " .foldedmission").show(300);
 		}
 		else if (data.method == Method.GAMERECORD) {
+			$.each($(".player-card"), function(i, card) {
+				card.style.zIndex = 9;
+			});
+
 			// display record under cards
 			record = data.record;
 			if (data.record[round].resault.good_evil == "good") {
@@ -458,7 +458,9 @@ function startHandleMethod() {
 		}
 		else if (data.method == Method.DISCONNECT) {
 			players_num = data.players_num;
+			player_ready = data.player_ready;
 			$("#waiting-number")[0].innerHTML = players_num;
+			$("#ready-number")[0].innerHTML = player_ready;
 		}
 		else {
 			console.log(data)

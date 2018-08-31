@@ -1,6 +1,7 @@
 var socket = null;
 var varify = false;
 var user_id = null;
+var name = "";
 
 function login () {
 	name = $("#name")[0].value;
@@ -37,22 +38,22 @@ function login () {
 			console.log(data);
 		}
 		else {
-			if (data.method == Method.WAITING) {
+			if (name == data.name) {
 				players_num = data.players_num;
 				$("#waiting-number")[0].innerHTML = players_num;
+
+				varify = true;
+				user_id = data.id;
+				// window.history.pushState({}, "賣瓦隆 - " + user_id, "?user_id=" + user_id)
+
+				$("#black-bg").hide(300);
+				$("#waiting").hide(300);
+				$("#login").hide(300);
+
+				$("#prepare").show(300);
+				startHandleMethod();
+				loadImages();
 			}
-
-			varify = true;
-			user_id = data.id;
-			window.history.pushState({}, "賣瓦隆 - " + qid, "?user_id=" + qid)
-
-			$("#black-bg").hide(300);
-			$("#waiting").hide(300);
-			$("#login").hide(300);
-
-			$("#prepare").show(300);
-			startHandleMethod();
-			loadImages();
 		}
 	}
 
@@ -68,7 +69,23 @@ function login () {
 		socket = null;
 
 		if (varify) {
-			console.log("伺服器關閉");
+			$("#black-bg").show(300);
+			$("#socketclose").show(300);
+
+			$("#tokens")[0].innerHTML = "";
+			$("#failed")[0].innerHTML = "";
+			$("#cards")[0].innerHTML = "";
+			$("#story #text")[0].innerHTML = "";
+
+			$("#game").hide();
+			$("#prepare").hide();
+			$("#login").show();
+
+			setTimeout(function() {
+				$("#black-bg").hide(300);
+				$("#socketclose").hide(300);
+			}, 5000);
+			return;
 		}
 
 		if (event.code == 1006) {

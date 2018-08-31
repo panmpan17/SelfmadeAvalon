@@ -44,15 +44,18 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-#wrongsecret {
+#wrongsecret,
+#socketclose {
 	position: fixed;
-	left: calc(50% - 100px);
+	left: calc(50% - 300px);
 	top: calc(50% - 40px);
 
-	width: 200px;
+	width: 600px;
 	height: 80px;
 	line-height: 80px;
 	font-size: 36px;
 	color: tomato;
 	display: none;
+	z-index: 25;
+	text-align: center;
 }

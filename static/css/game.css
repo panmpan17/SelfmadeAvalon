@@ -192,9 +192,9 @@
 	z-index: 12;
 }
 
-#vote, #mission {
+/*#vote, #mission {
 	background: rgba(0, 0, 0, .3);
-}
+}*/
 
 #story #text {
 	position: fixed;
@@ -213,7 +213,7 @@
 #mission #fail {
 	position: fixed;
 	left: 50px;
-	top: calc(50% - 100px);
+	top: 50px;
 	height: 200px;
 }
 

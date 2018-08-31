@@ -264,7 +264,7 @@ class SocketServer:
         self.game = Game()
 
     def _checkdata(self, data, keys):
-        dull = Dull()
+        dull = Dummy()
         for key in keys:
             if key not in data:
                 return False
@@ -296,8 +296,11 @@ class SocketServer:
             self.game.disconnect(user_id)
             self.players.pop(user_id)
 
+            player_ready = len(
+                [1 for _id in self.waiting if self.players[_id]["ready"]])
+
             response = {"method": method.DISCONNECT, "user": user_id,
-                "players_num": len(self.players)}
+                "players_num": len(self.players), "player_ready": player_ready}
             for player in self.players.values():
                 yield from player["socket"].send(json.dumps(response))
 
@@ -361,7 +364,7 @@ class SocketServer:
             return "close"
 
         with (yield from self.lock):
-            response = {"success": True, "id": user_id,
+            response = {"success": True, "id": user_id, "name": data.name,
                         "players_num": len(self.players)}
             self.players[user_id]["name"] = data.name
 
@@ -392,19 +395,16 @@ class SocketServer:
     def READY(self, data, user_id, websocket):
         with (yield from self.lock):
             self.players[user_id]["ready"] = True
-            pprint(self.players)
-            pprint(self.waiting)
 
             player_ready = len(
                 [1 for _id in self.waiting if self.players[_id]["ready"]])
 
-            print(player_ready)
             for player in self.players.values():
                 yield from player["socket"].send(json.dumps({
                     "method": method.CONFIRMREADY, "user": user_id,
                     "player_ready": player_ready}))
 
-            if all([self.players[_id]["ready"] for _id in self.waiting]):
+            if len(self.waiting) == player_ready:
                 yield from self.start_game()
 
     def start_game(self):
