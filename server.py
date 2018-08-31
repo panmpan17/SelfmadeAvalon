@@ -14,6 +14,10 @@ PLAYERLIMIT = 10
 REQUIRE_TO_START = 5
 
 
+def randomcode(num=6):
+    return "".join(random.sample(string.ascii_letters, num))
+
+
 class Method:
     def __init__(self, method_json):
         for method in method_json:
@@ -45,6 +49,7 @@ class ErrMsg:
 
 class Game:
     def __init__(self):
+        self.started = False
         self.captain = None
         self.readying = False
         self.story_finish = 0
@@ -254,13 +259,10 @@ class SocketServer:
         self.server = None
         self.lock = asyncio.Lock()
 
-        self.started = False
-
         self.players = {}
         self.waiting = []
         self.spectating = []
 
-        self.captain = None
         self.game = Game()
 
     def _checkdata(self, data, keys):
@@ -287,6 +289,23 @@ class SocketServer:
             pass
 
     def disconnect(self, user_id):
+        print(self.game.started)
+        if self.game.started:
+            with (yield from self.lock):
+
+                self.game.disconnect(user_id)
+                response = {"method": method.DISCONNECTTIMER, "user": user_id,
+                    "name": self.players[user_id]["name"], "timer": 60}
+
+                for player in self.players.values():
+                    if player["id"] != user_id:
+                        yield from player["socket"].send(json.dumps(response))
+
+            # yield from asyncio.sleep(60)
+
+            # if user havn't return end the game
+            return
+
         with (yield from self.lock):
             if user_id in self.waiting:
                 self.waiting.remove(user_id)
@@ -301,12 +320,13 @@ class SocketServer:
 
             response = {"method": method.DISCONNECT, "user": user_id,
                 "players_num": len(self.players), "player_ready": player_ready}
+
             for player in self.players.values():
                 yield from player["socket"].send(json.dumps(response))
 
     @asyncio.coroutine
     def handle_client(self, websocket):
-        user_id = "".join(random.sample(string.ascii_letters, 10))
+        user_id = randomcode(10)
         self.players[user_id] = {"id": user_id, "socket": websocket,
                                  "ready": False}
 
@@ -323,7 +343,9 @@ class SocketServer:
                 self.request_log(data)
             except Exception as e:
                 self.request_log({"method": method.ERROR})
-                yield from websocket.send(json.dumps(ErrMsg.DATA_PARSE_WRONG))
+                print("error")
+                logging.exception(" error")
+                # yield from websocket.send(json.dumps(ErrMsg.DATA_PARSE_WRONG))
                 continue
 
             try:
@@ -369,7 +391,7 @@ class SocketServer:
             self.players[user_id]["name"] = data.name
 
             # Become Specate if too many player or game started
-            if len(self.waiting) >= PLAYERLIMIT or self.started:
+            if len(self.waiting) >= PLAYERLIMIT or self.game.started:
                 response["method"] = method.SPECTATE
                 self.spectating.append(user_id)
             else:
@@ -409,6 +431,7 @@ class SocketServer:
 
     def start_game(self):
         self.game = Game()
+        self.game.started = True
 
         self.game.set_teams(self.waiting)
         self.waiting.clear()

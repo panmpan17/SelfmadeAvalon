@@ -74,6 +74,7 @@
         "KILLMERLIN",
         "END",
 
-        "DISCONNECT"
+        "DISCONNECT",
+        "DISCONNECTTIMER"
     ]
 }

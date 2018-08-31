@@ -19,6 +19,8 @@ var tokenNeed = null;
 var captain = null;
 var teamates = [];
 
+var reconnect = {};
+
 function loadImages() {
 	$.each(images, function(name, image) {
 		if (!(image instanceof Object)) {
@@ -187,7 +189,7 @@ function startHandleMethod() {
 			needready = true;
 
 			// Automatically Ready
-			// ready();
+			ready();
 		}
 		else if (data.method == Method.CONFIRMREADY) {
 			if (data.user == user_id) {
@@ -317,7 +319,7 @@ function startHandleMethod() {
 			$("#confirm").hide();
 
 			// Automatically vote reject
-			// approveTeam();
+			approveTeam();
 		}
 		else if (data.method == Method.VOTECONFIRM) {
 			$("#black-bg").hide();
@@ -462,6 +464,11 @@ function startHandleMethod() {
 			$("#waiting-number")[0].innerHTML = players_num;
 			$("#ready-number")[0].innerHTML = player_ready;
 		}
+		else if (data.method == Method.DISCONNECTTIMER) {
+			console.log(data)
+			reconnect[data.name] = {"id": data.user, "timer": data.timer};
+			console.log(reconnect)
+		}
 		else {
 			console.log(data)
 		}
@@ -489,4 +496,19 @@ $(document).ready(function() {
 			login();
 		}
 	});
+
+	setInterval(function() {
+		if (Object.keys(reconnect).length != 0) {
+			html = ""
+			$.each(reconnect, function(name, user) {
+				html += "{}: {} - {}".format(name, user.id, user.timer);
+				user.timer -= 1;
+			});
+			$("#reconnect #text")[0].innerHTML = html;
+			$("#reconnect").show();
+		}
+		else {
+			$("#reconnect").hide();
+		}
+	}, 1000);
 });

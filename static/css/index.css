@@ -59,3 +59,15 @@ body {
 	z-index: 25;
 	text-align: center;
 }
+
+#reconnect {
+	display: none;
+	position: fixed;
+	left: 0;
+	top: 10px;
+	background: rgba(0, 0, 0, .7);
+	pading: 10px;
+	color: tomato;
+}
+
+/*#reconnect #text {}*/
