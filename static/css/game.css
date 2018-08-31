@@ -2,19 +2,22 @@
 	display: none;
 }
 
-
-#waiting-number {
-	position: fixed;
-	top: 50px;
-	left: 50px;
-	color: white;
+#player-number {
+	background: rgb(0, 0, 0, .3);
+	width: 300px;
 }
 
-#spectating-number {
-	position: fixed;
-	top: 100px;
-	left: 50px;
-	color: white;
+#player-number h3 {
+	color: cornflowerblue;
+	margin: 0 5px;
+}
+#player-number h4 {
+	color: tomato;
+	margin: 0 5px;
+}
+#player-number h5 {
+	color: lightgray;
+	margin: 0 5px;
 }
 
 #ready {
@@ -230,7 +233,7 @@
 #vote #reject:hover img,
 #mission #success:hover img,
 #mission #fail:hover img {
-	outline: 25px solid rgb(200, 200, 255, .6);
+	outline: 25px solid rgba(200, 200, 255, .6);
 }
 
 #assassin-merlin {

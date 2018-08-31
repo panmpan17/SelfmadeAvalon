@@ -23,6 +23,7 @@ function login () {
 		data = JSON.parse(event.data);
 
 		if (data.success == false) {
+
 			if (data.method == Method.VARIFYFAIL) {
 				$("#waiting").hide(300);
 				$("#wrongsecret").show(300);
@@ -31,13 +32,19 @@ function login () {
 					$("#black-bg").hide(300);
 					$("#wrongsecret").hide(300);
 				}, 5000);
-				return
+				return;
 			}
 			console.log(data);
 		}
 		else {
+			if (data.method == Method.WAITING) {
+				players_num = data.players_num;
+				$("#waiting-number")[0].innerHTML = players_num;
+			}
+
 			varify = true;
 			user_id = data.id;
+			window.history.pushState({}, "賣瓦隆 - " + qid, "?user_id=" + qid)
 
 			$("#black-bg").hide(300);
 			$("#waiting").hide(300);

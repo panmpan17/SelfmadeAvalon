@@ -2,23 +2,44 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>阿瓦隆</title>
+	<title>麥瓦隆</title>
 	<link rel="stylesheet" href="/static/css/index.css">
 	<link rel="stylesheet" href="/static/css/login.css">
 	<link rel="stylesheet" href="/static/css/game.css">
+	<script>
+		if (!("path" in Event.prototype))
+		Object.defineProperty(Event.prototype, "path", {
+		  get: function() {
+		    var path = [];
+		    var currentElem = this.target;
+		    while (currentElem) {
+		      path.push(currentElem);
+		      currentElem = currentElem.parentElement;
+		    }
+		    if (path.indexOf(window) === -1 && path.indexOf(document) === -1)
+		      path.push(document);
+		    if (path.indexOf(window) === -1)
+		      path.push(window);
+		    return path;
+		  }
+		});
+	</script>
 </head>
 <body>
 	<main>
 		<section id="login">
 			<input id="name" type="text" placeholder="名字"> <br>
-			<input id="secret" type="text" placeholder="密語">
+			<input id="secret" type="password" placeholder="密語">
 			<button id="login" onclick="login()">送出</button>
 
 			<button id="turtorial">教學</button>
 		</section>
 		<section id="prepare">
-			<h3 id="waiting-number"></h3>
-			<h4 id="spectating-number"></h4>
+			<div id="player-number">
+				<h3>連線人數: <span id="waiting-number">0</span></h3>
+				<h4>已準備人數: <span id="ready-number">0</span></h4>
+				<h5>觀看人數: <span id="spectating-number">0</span></h5>
+			</div> 
 
 			<button id="ready" class="disable" onclick="ready()">準備</button>
 			<button id="togglespectate"></button>

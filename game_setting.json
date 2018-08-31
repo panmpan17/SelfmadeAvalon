@@ -72,6 +72,8 @@
         "MISSIONCONFIRM",
         "GAMERECORD",
         "KILLMERLIN",
-        "END"
+        "END",
+
+        "DISCONNECT"
     ]
 }

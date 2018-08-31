@@ -1,5 +1,8 @@
 from datetime import datetime
+from pprint import pprint
 
+import sys
+import argparse
 import logging
 import json
 import asyncio
@@ -24,7 +27,7 @@ method = Method(game_setting["method"])
 SECRET = "mime"
 
 
-class Dull:
+class Dummy:
     pass
 
 
@@ -293,10 +296,10 @@ class SocketServer:
             self.game.disconnect(user_id)
             self.players.pop(user_id)
 
-            # Todo: notify other
-            # if waiting number not enugh and is readying cancel ready
-            # for player in self.players:
-            #
+            response = {"method": method.DISCONNECT, "user": user_id,
+                "players_num": len(self.players)}
+            for player in self.players.values():
+                yield from player["socket"].send(json.dumps(response))
 
     @asyncio.coroutine
     def handle_client(self, websocket):
@@ -322,7 +325,6 @@ class SocketServer:
 
             try:
                 if "method" not in data:
-                    logging.exception("Oops, seem like handler has gone wrong")
                     yield from websocket.send(json.dumps(
                         ErrMsg.DATA_PARSE_WRONG))
                     continue
@@ -358,9 +360,9 @@ class SocketServer:
             yield from websocket.send(json.dumps(ErrMsg.VARIFYFAIL))
             return "close"
 
-        response = {"success": True, "id": user_id}
-
         with (yield from self.lock):
+            response = {"success": True, "id": user_id,
+                        "players_num": len(self.players)}
             self.players[user_id]["name"] = data.name
 
             # Become Specate if too many player or game started
@@ -372,7 +374,8 @@ class SocketServer:
                 self.waiting.append(user_id)
 
             # Send Login success
-            yield from websocket.send(json.dumps(response))
+            for player in self.players.values():
+                yield from player["socket"].send(json.dumps(response))
 
             # Send other players NEEDREADY if number is enough
             if (len(self.waiting) >= REQUIRE_TO_START and
@@ -387,34 +390,44 @@ class SocketServer:
                         "method": method.NEEDREADY}))
 
     def READY(self, data, user_id, websocket):
-        yield from websocket.send(json.dumps({"method": method.CONFIRMREADY,
-                                              "success": True}))
-
-        print(self.players, self.waiting)
         with (yield from self.lock):
             self.players[user_id]["ready"] = True
+            pprint(self.players)
+            pprint(self.waiting)
+
+            player_ready = len(
+                [1 for _id in self.waiting if self.players[_id]["ready"]])
+
+            print(player_ready)
+            for player in self.players.values():
+                yield from player["socket"].send(json.dumps({
+                    "method": method.CONFIRMREADY, "user": user_id,
+                    "player_ready": player_ready}))
 
             if all([self.players[_id]["ready"] for _id in self.waiting]):
-                self.game = Game()
+                yield from self.start_game()
 
-                self.game.set_teams(self.waiting)
-                self.waiting.clear()
+    def start_game(self):
+        self.game = Game()
 
-                response = self.game.set_characters(self.players)
+        self.game.set_teams(self.waiting)
+        self.waiting.clear()
 
-                for player in self.game.users:
-                    role = self.game.role_map[player]
-                    self.players[player]["role"] = role
+        response = self.game.set_characters(self.players)
 
-                    response["role"] = role
-                    if role in game_setting["special_power"]:
-                        response["special_power"] = []
-                        for k, v in self.game.role_map.items():
-                            if v in game_setting["special_power"][role]:
-                                response["special_power"].append(k)
+        for player in self.game.users:
+            role = self.game.role_map[player]
+            self.players[player]["role"] = role
 
-                    yield from self.players[player]["socket"].send(
-                        json.dumps(response))
+            response["role"] = role
+            if role in game_setting["special_power"]:
+                response["special_power"] = []
+                for k, v in self.game.role_map.items():
+                    if v in game_setting["special_power"][role]:
+                        response["special_power"].append(k)
+
+            yield from self.players[player]["socket"].send(
+                json.dumps(response))
 
     def STORYFINISH(self, data, user_id, websocket):
         self.game.story_finish += 1
@@ -570,5 +583,15 @@ class SocketServer:
 
 
 if __name__ == "__main__":
+    psr = argparse.ArgumentParser(description="Start up Avalon"
+                                  "websocket server.")
+    psr.add_argument("-o", default=False, action="store_true",
+                     help="Wether server is using 0.0.0.0 or not.")
+    vs = Dummy()
+    psr.parse_args(sys.argv[1:], namespace=vs)
+
     server = SocketServer()
-    server.run("0.0.0.0", 8000)
+    if vs.o:
+        server.run("0.0.0.0", 8000)
+    else:
+        server.run("localhost", 8000)

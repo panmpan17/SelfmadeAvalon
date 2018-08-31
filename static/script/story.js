@@ -1,4 +1,4 @@
-var STORYTIME = 500;
+var STORYTIME = 4000;
 var STORY = {
 	BASIC: [
 		{text: "天黑請閉眼", callback: null},

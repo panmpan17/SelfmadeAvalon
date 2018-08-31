@@ -3,6 +3,7 @@ var Method = null;
 var needready = false;
 var images = {};
 
+var player_ready = 0;
 var players_num = 0;
 var role = null;
 var special_power = null;
@@ -41,7 +42,7 @@ function displayCard(players) {
 		var div = $("<div>")[0];
 		div.classList.add("player-card");
 		div.id = "player-" + player[0];
-		div.onclick = clickPlayer;
+		div.addEventListener('click', clickPlayer);
 
 		var num = $("<div>")[0];
 		num.innerHTML = i + 1;
@@ -98,16 +99,20 @@ function clickPlayer(event) {
 		return;
 	}
 
-	if (!chosing || captain != user_id) {
+	if (!chosing || (captain != user_id)) {
 		return;
 	}
 
+	console.log(event.path, event)
 	$.each(event.path, function(_, ele) {
 		try {
+			console.log(2)
 			if (ele.classList.contains("player-card")) {
 				var player_id = ele.id.replace("player-", "");
 
+				console.log(3)
 				if (teamates.includes(player_id)) {
+					console.log(4)
 					$("#black-bg").show();
 					$("#waiting").show();
 
@@ -118,6 +123,7 @@ function clickPlayer(event) {
 					}));
 				}
 				else {
+					console.log(5)
 					if (teamates.length >= tokenNeed["numbers"][round]) {
 						return;
 					}
@@ -134,7 +140,9 @@ function clickPlayer(event) {
 				
 				return false;
 			}
-		} catch(e) {}
+		} catch(e) {
+			console.log(e)
+		}
 	});
 }
 
@@ -175,17 +183,28 @@ function startHandleMethod() {
 	socket.onmessage = function (event) {
 		data = JSON.parse(event.data);
 
-		if (data.method == Method.NEEDREADY) {
+		if (data.method == Method.WAITING) {
+			players_num = data.players_num;
+			$("#waiting-number")[0].innerHTML = players_num;
+		}
+		else if (data.method == Method.NEEDREADY) {
 			$("#ready")[0].classList.remove("disable");
 			needready = true;
 
 			// Automatically Ready
-			ready();
+			// ready();
 		}
 		else if (data.method == Method.CONFIRMREADY) {
-			$("#ready")[0].classList.add("active");
+			console.log(data)
+			if (data.user == user_id) {
+				$("#ready")[0].classList.add("active");
+			}
+
+			player_ready = data.player_ready;
+			$("#ready-number")[0].innerHTML = player_ready;
 		}
 		else if (data.method == Method.START) {
+			needready = false;
 			$("#prepare").hide();
 			$("#game").show();
 
@@ -436,6 +455,10 @@ function startHandleMethod() {
 			else {
 				alert("壞人獲勝");
 			}
+		}
+		else if (data.method == Method.DISCONNECT) {
+			players_num = data.players_num;
+			$("#waiting-number")[0].innerHTML = players_num;
 		}
 		else {
 			console.log(data)
