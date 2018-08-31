@@ -1,13 +1,10 @@
 # SelfmadeAvalon
-### Framework
-- Python
-    - asyncio
-    - asyncws
-    - flask
-- Javascript
+## Requirements
+- [Protocolws](https://github.com/panmpan17/ProtocolWebsocket)
+- Flask
 
 ### Execute
-`python server.py` to run websocket server
+`python websocketserver` to run websocket server <br>
 `python app.py` to run http server
 
 ### Percentage Done
