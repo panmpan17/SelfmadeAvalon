@@ -26,8 +26,7 @@ game_setting = json.load(open("game_setting.json"))
 method = Method(game_setting["method"])
 
 class ErrMsg:
-    VARIFY_FAIL = {"success": False, "close": True,
-                   "method": method.VARIFYFAIL}
+    VARIFY_FAIL = {"close": True, "method": method.VARIFYFAIL}
     REJOIN_FAIL = {"close": True, "method": method.REJOINFAIL}
 
 class Server(WebsocketServer):
@@ -165,7 +164,7 @@ class Server(WebsocketServer):
             yield from self.send(ws, ErrMsg.VARIFY_FAIL)
             return True
 
-        response = {"success": True, "id": _id, "name": data["name"]}
+        response = {"id": _id, "name": data["name"]}
         with (yield from self.lock):
             response["players_num"] =  len(self.connected)
             self.connected[_id]["name"] = data["name"]
