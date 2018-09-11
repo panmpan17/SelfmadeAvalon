@@ -189,7 +189,7 @@ function startHandleMethod() {
 			needready = true;
 
 			// Automatically Ready
-			ready();
+			// ready();
 		}
 		else if (data.method == Method.CONFIRMREADY) {
 			if (data.user == user_id) {
@@ -319,7 +319,7 @@ function startHandleMethod() {
 			$("#confirm").hide();
 
 			// Automatically vote reject
-			approveTeam();
+			// approveTeam();
 		}
 		else if (data.method == Method.VOTECONFIRM) {
 			$("#black-bg").hide();
@@ -381,6 +381,7 @@ function startHandleMethod() {
 			$("#mission").hide(300);
 		}
 		else if (data.method == Method.KILLMERLIN) {
+			console.log(1)
 			assassin = true;
 
 			$.each(data.evils_role_map, function(id, role) {
@@ -418,6 +419,43 @@ function startHandleMethod() {
 				$(".vote").hide();
 				$(".teamates").hide();
 			}, 1000);
+		}
+		else if (data.method == Method.ASSASSIN) {
+			assassin = false;
+
+			$.each(data.role_map, function(id, role) {
+				var ele = $("#player-" + id)[0];
+				ele.removeChild($("#player-" + id + " .character")[0]);
+
+				var img = null;
+				if (role != "SERVANT" && role != "EVIL") {
+					img = images["q_" + role.toLowerCase()].cloneNode();
+				}
+				else if (role == "SERVANT") {
+					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
+				}
+				else if (role == "EVIL") {
+					img = images["q_" + role.toLowerCase() + "_1"].cloneNode();
+				}
+				img.classList.add("character");
+				ele.appendChild(img);
+			});
+
+			setTimeout(function() {
+				$("#vote").hide();
+				$("#mission").hide();
+				$(".captain").hide();
+				$(".foldedmission").hide();
+				$(".vote").hide();
+				$(".teamates").hide();
+			}, 1000);
+
+			if (data.is_merlin) {
+				alert("刺梅林成功 !");
+			}
+			else {
+				alert("刺錯人了, 哈哈 !")
+			}
 		}
 		else if (data.method == Method.END) {
 			$.each(data.role_map, function(id, role) {
@@ -491,9 +529,9 @@ $(document).ready(function() {
 			});
 
 			// Automatically Join
-			$("#name")[0].value = random.randint(1,100);
+			// $("#name")[0].value = random.randint(1,100);
 			$("#secret")[0].value = "mime";
-			login();
+			// login();
 		}
 	});
 

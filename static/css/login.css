@@ -1,13 +1,13 @@
 section#login {
 	position: fixed;
-	width: 300px;
-	height: 100px;
-	top: calc(50% - 50px);
-	left: calc(50% - 150px);
+	width: 400px;
+	height: 400px;
+	top: calc(50% - 100px);
+	left: calc(50% - 200px);
 	text-align: center;
 }
 
-section#login input {
+#login input {
 	margin: 10px 0;
 	width: 100%;
 	height: 45px;
@@ -16,7 +16,8 @@ section#login input {
 	font-size: 24px;
 }
 
-section#login button#login {
+section#login #login,
+section#login #rejoin {
 	width: 120px;
 	height: 40px;
 	font-size: 20px;
@@ -26,11 +27,16 @@ section#login button#login {
 	color: white;
 }
 
-section#login button#login:hover {
+section#login #rejoin {
+	background: tomato;
+}
+
+section#login #login:hover,
+section#login #rejoin:hover {
 	font-weight: bold;
 }
 
-section#login button#turtorial {
+#login #turtorial {
 	position: fixed;
 	right: 20px;
 	bottom: 20px;

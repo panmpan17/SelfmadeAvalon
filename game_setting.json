@@ -39,6 +39,7 @@
         "ERROR",
 
         "LOGIN",
+        "REJOIN",
         "READY",
         "UNREADY",
         "SPECTATE",
@@ -55,6 +56,7 @@
         "ASSASSIN",
 
         "VARIFYFAIL",
+        "REJOINFAIL",
         "PLAYERJOIN",
         "PLAYERLEAVE",
         "WAITING",

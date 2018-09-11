@@ -1,9 +1,11 @@
-from protocolws import WebsocketServer
 from game import Game
 
 import json
 import sys
 import argparse
+
+sys.path.append("../ProtocolWebscocket")
+from protocolws import WebsocketServer
 
 PLAYERLIMIT = 10
 REQUIRE_TO_START = 5
@@ -24,7 +26,9 @@ game_setting = json.load(open("game_setting.json"))
 method = Method(game_setting["method"])
 
 class ErrMsg:
-    VARIFY_FAIL = {"close": True, "method": method.VARIFYFAIL}
+    VARIFY_FAIL = {"success": False, "close": True,
+                   "method": method.VARIFYFAIL}
+    REJOIN_FAIL = {"close": True, "method": method.REJOINFAIL}
 
 class Server(WebsocketServer):
     def __init__(self):
@@ -35,10 +39,11 @@ class Server(WebsocketServer):
         self.ready = set()
 
     # Override WebsocketServer.disconnect
-    def disconnect(_id, ws):
+    def disconnect(self, _id, ws):
         if self.game.started:
             with (yield from self.lock):
                 self.game.disconnect(_id)
+                self.afk.add(_id)
 
                 response = {"method": method.DISCONNECTTIMER, "user": _id,
                     "name": self.connected[_id]["name"], "timer": 60}
@@ -48,7 +53,7 @@ class Server(WebsocketServer):
                         yield from self.send(p["ws"], response)
             return
 
-        super().disconnect(_id, ws)
+        yield from super().disconnect(_id, ws)
         player_ready = len([1 for _id in self.game.team if _id in self.ready])
 
         response = {"method": method.DISCONNECT, "user": _id,
@@ -75,7 +80,7 @@ class Server(WebsocketServer):
 
             yield from self.send(self.connected[p]["ws"], response)
 
-    def approve_reject(self, response, websocket):
+    def approve_reject(self, response):
         resault = self.game.all_voted()
 
         # Check is everyone voted
@@ -121,7 +126,7 @@ class Server(WebsocketServer):
             for p in self.game.users:
                 yield from self.send(self.connected[p]["ws"], response)
 
-    def success_fail(self, response, websocket):
+    def success_fail(self, response):
         resault = self.game.all_executed()
 
         if resault is not None:
@@ -142,8 +147,8 @@ class Server(WebsocketServer):
                     yield from self.send(self.connected[p]["ws"], response)
 
                 response = self.game.notify_captain()
-                for p in self.connected:
-                    yield from self.send(self.connected[p]["ws"], response)
+                for p in self.connected.values():
+                    yield from self.send(p["ws"], response)
             return
 
         with (yield from self.lock):
@@ -151,18 +156,18 @@ class Server(WebsocketServer):
                 yield from self.send(self.connected[p]["ws"], response)
 
     def LOGIN(self, _id, ws, data):
-        if not self._checkdata(data, ("name", "secret", )):
-            return
+        if not self.check_data(data, ("name", "secret", )):
+            return True
         if data["name"] == "":
-            return
+            return True
 
         if data["secret"] != SECRET:
             yield from self.send(ws, ErrMsg.VARIFY_FAIL)
             return True
 
+        response = {"success": True, "id": _id, "name": data["name"]}
         with (yield from self.lock):
-            response = {"success": True, "id": _id, "name": data["name"],
-                        "players_num": len(self.connected)}
+            response["players_num"] =  len(self.connected)
             self.connected[_id]["name"] = data["name"]
 
             # Become Specate if too many player or game started
@@ -186,8 +191,29 @@ class Server(WebsocketServer):
                         yield from self.send(self.connected[_id]["ws"],
                                              {"method": method.NEEDREADY})
                 else:
-                    yield from websocket.send(json.dumps({
-                        "method": method.NEEDREADY}))
+                    yield from self.send(ws, {"method": method.NEEDREADY})
+
+    def REJOIN(self, _id, ws, data):
+        if not self.check_data(data, ("code", )):
+            return True
+        if data["code"] not in self.afk:
+            yield from self.send(ws, ErrMsg.REJOIN_FAIL)
+            return
+
+        old_id = data["code"]
+        response = {"method": method.REJOIN, "old_id": old_id,
+                    "new_id": _id}
+        with (yield from self.lock):
+            if old_id in self.game.users:
+                self.game.users.remove(old_id)
+
+            self.connected[_id]["name"] = self.connected[old_id]["name"]
+            self.connected.pop(old_id)
+            self.afk.remove(old_id)
+            response["name"] = self.connected[_id]["name"]
+
+            for p in self.connected.values():
+                yield from self.send(p["ws"], response)
 
     def READY(self, _id, ws, data):
         with (yield from self.lock):
@@ -217,7 +243,7 @@ class Server(WebsocketServer):
     def CHOSETEAMATE(self, _id, ws, data):
         if _id != self.game.captain:
             return
-        if not self._checkdata(data, ("user_id", )):
+        if not self.check_data(data, ("user_id", )):
             return
 
         response = self.game.chose_teamate(data["user_id"], True)
@@ -229,7 +255,7 @@ class Server(WebsocketServer):
     def UNCHOSETEAMATE(self, _id, ws, data):
         if _id != self.game.captain:
             return
-        if not self._checkdata(data, ("user_id", )):
+        if not self.check_data(data, ("user_id", )):
             return
 
         response = self.game.chose_teamate(data["user_id"], False)
@@ -248,10 +274,10 @@ class Server(WebsocketServer):
                 yield from self.send(self.connected[p]["ws"], response)
 
     def APPROVE(self, _id, ws, data):
-        yield from self.approve_reject(self.game.vote_approve(_id), ws)
+        yield from self.approve_reject(self.game.vote_approve(_id))
 
     def REJECT(self, _id, ws, data):
-        yield from self.approve_reject(self.game.vote_reject(_id), ws)
+        yield from self.approve_reject(self.game.vote_reject(_id))
 
     def SUCCESS(self, _id, ws, data):
         yield from self.success_fail(self.game.mission_success(_id), ws)
@@ -262,17 +288,12 @@ class Server(WebsocketServer):
     def ASSASSIN(self, _id, ws, data):
         if self.game.role_map[_id] != "ASSASSIN":
             return
-        if not self._checkdata(data, ("user_id", )):
+        if not self.check_data(data, ("user_id", )):
             return
 
-        if self.game.role_map[data["user_id"]] == "MERLIN":
-            response = self.game.evil_win(add_token=False)
-            with (yield from self.lock):
-                for p in self.game.users:
-                    yield from self.send(self.connected[p]["ws"], response)
-            return
+        response = {"method": method.ASSASSIN, "role_map": self.game.role_map,
+            "is_merlin": self.game.role_map[data["user_id"]]=="MERLIN"}
 
-        response = self.game.good_win()
         with (yield from self.lock):
             for p in self.game.users:
                 yield from self.send(self.connected[p]["ws"], response)
