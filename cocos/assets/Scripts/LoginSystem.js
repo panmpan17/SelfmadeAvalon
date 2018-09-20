@@ -1,4 +1,4 @@
-var netControl = require("NetControl");
+const netControl = require("NetControl");
 
 cc.Class({
     extends: cc.Component,
@@ -16,6 +16,8 @@ cc.Class({
 
     start () {
         this.loginBtn.on("touchstart", this.login, this);
+        // automatically login
+        this.login();
     },
 
     // update (dt) {},
@@ -43,7 +45,6 @@ cc.Class({
     },
     onLoginMessage: function (event) {
         var data = JSON.parse(event.data);
-        console.log(data)
 
         if (data.method == "VARIFYFAIL") {
             alert("failed");
@@ -52,7 +53,7 @@ cc.Class({
         }
 		else if (data.method == "WAITING") {
             this.waitingNode.active = false;
-            this.game.toPreparePage(data);
+            this.controller.toPreparePage(data);
 		}
     },
 });

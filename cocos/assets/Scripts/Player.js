@@ -18,4 +18,14 @@ cc.Class({
     },
 
     // update (dt) {},
+    changeCard (spriteFrame) {
+        this.card.getComponent(cc.Sprite).spriteFrame = spriteFrame;
+    },
+
+    hideEveryMark () {
+        this.captainMark.active = false;
+        this.missionMark.active = false;
+        this.voteMark.active = false;
+        this.foldedMissionMark.active = false;
+    }
 });

@@ -48,10 +48,27 @@ module.exports = {
             return picks;
         }
     })(),
-    foreach: function (iterate_object, iterate_function) {
-        keys = Object.keys(iterate_object);
-        for (i=0;i<keys.length;i++) {
-            iterate_function(keys[i], iterate_object[keys[i]]);
+    foreach: function(e, t) {
+        var n, r = 0;
+        if (e.length != undefined) {
+            for (n = e.length; r < n; r++) {
+                if (!1 === t.call(e[r], r, e[r])) {
+                    break;
+                }
+            }
         }
+        else {
+            for (r in e) {
+                if (!1 === t.call(e[r], r, e[r])) {
+                    break;
+                }
+            }
+        }
+        return e;
     },
+    reapeat: function (func, times) {
+        for (var i=0;i<times;i++) {
+            func.call(i, i);
+        }
+    }
 }
