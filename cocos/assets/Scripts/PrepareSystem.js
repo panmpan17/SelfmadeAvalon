@@ -10,10 +10,10 @@ cc.Class({
     onLoad () {
         this.connectedNum = this.node.getChildByName("ReadyNum").getChildByName("ConnectedText");
         this.readyNum = this.node.getChildByName("ReadyNum").getChildByName("ReadyText");
-        this.readyBtn = this.node.getChildByName("ReadyBtn");
+        this.readyBtn = this.node.getChildByName("ReadyBtn").getComponent(cc.Toggle);
 
         netControl._sock.onmessage = this.onPrepareMessage.bind(this);
-        this.readyBtn.on("touchstart", this.ready, this);
+        // this.readyBtn.on("touchstart", this.ready, this);
     },
 
     start () {
@@ -29,11 +29,11 @@ cc.Class({
             this.connectedNum.getComponent(cc.Label).string = "連線人數: " + data.players_num;
         }
         else if (data.method == "NEEDREADY") {
-            this.readyBtn.color = cc.hexToColor("#FF6347");
+            this.readyBtn.interactable = true;
             this.controller.needready = true;
 
             // automatically ready
-            this.ready();
+            // this.ready();
         }
         else if (data.method == "CONFIRMREADY") {
             if (data.user == this.controller.user_id) {
@@ -50,7 +50,14 @@ cc.Class({
     
     ready () {
         if (this.controller.needready && !this.controller.onReady) {
+            // if (this.readyBtn.isChecked) {
+            this.readyBtn.node.getChildByName("Text").getComponent(cc.Label).string = "準備成功";
+            this.readyBtn.interactable = false;
             netControl.send({method: "READY"});
+            // }
+            // else {
+            //     this.readyBtn.node.getChildByName("Text").getComponent(cc.Label).string = "準備";
+            // }
         }
     }
 });

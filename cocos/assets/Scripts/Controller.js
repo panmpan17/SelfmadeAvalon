@@ -62,7 +62,11 @@ cc.Class({
         this.prepareSystem.node.active = false;
         this.gameSystem.node.active = true;
 
-        // this.gameSystem.changeBoard(this.players_num);
-        this.gameSystem.changeBoard(jythons.random.randint(5, 10));
+        if (this.players_num >= 5) {
+            this.gameSystem.changeBoard(this.players_num);
+        }
+        else {
+            this.gameSystem.changeBoard(jythons.random.randint(5, 10));
+        }
     }
 });

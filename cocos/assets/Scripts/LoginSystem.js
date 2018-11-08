@@ -17,7 +17,7 @@ cc.Class({
     start () {
         this.loginBtn.on("touchstart", this.login, this);
         // automatically login
-        this.login();
+        // this.login();
     },
 
     // update (dt) {},
