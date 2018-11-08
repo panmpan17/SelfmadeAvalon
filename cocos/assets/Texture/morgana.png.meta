@@ -1,0 +1,30 @@
+{
+  "ver": "2.0.0",
+  "uuid": "081f68cb-d14c-4033-a5e5-58be0f6f6760",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "subMetas": {
+    "morgana": {
+      "ver": "1.0.3",
+      "uuid": "b35b4872-7fd0-42e5-8594-6a57867c9d87",
+      "rawTextureUuid": "081f68cb-d14c-4033-a5e5-58be0f6f6760",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 128,
+      "height": 204,
+      "rawWidth": 128,
+      "rawHeight": 204,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
