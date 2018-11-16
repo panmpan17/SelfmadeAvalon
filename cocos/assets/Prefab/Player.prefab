@@ -70,12 +70,12 @@
     },
     "_rotationX": 0,
     "_rotationY": 0,
-    "_scaleX": 0.7,
-    "_scaleY": 0.7,
+    "_scaleX": 0.9,
+    "_scaleY": 0.9,
     "_position": {
       "__type__": "cc.Vec2",
-      "x": -422,
-      "y": -113.8
+      "x": -405,
+      "y": 150
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -147,7 +147,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "8d6f42be-3e84-4292-aedd-91fd750e07b4"
+      "__uuid__": "f4736f57-f14a-4934-9e2b-07620db3d389"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -162,9 +162,7 @@
     "_isTrimmedMode": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_atlas": {
-      "__uuid__": "b7258a86-7049-4fd2-bd7f-a27c3bfdb4f5"
-    }
+    "_atlas": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -186,7 +184,7 @@
     },
     "_children": [],
     "_tag": -1,
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 6
@@ -221,7 +219,7 @@
     "_scaleY": 1,
     "_position": {
       "__type__": "cc.Vec2",
-      "x": -44.4,
+      "x": 1.9,
       "y": 81.4
     },
     "_skewX": 0,
@@ -240,7 +238,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "2979fb1d-b449-4e29-b0e3-b98ff0b64c30"
+      "__uuid__": "6b877fb2-7507-4a0a-8270-8a555eb50681"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -255,9 +253,7 @@
     "_isTrimmedMode": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_atlas": {
-      "__uuid__": "b7258a86-7049-4fd2-bd7f-a27c3bfdb4f5"
-    }
+    "_atlas": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -333,7 +329,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "6c608ede-8f77-49a9-9386-cbde6502cf7a"
+      "__uuid__": "6d96c193-cbec-4801-a74e-d281a2b9c8ee"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -348,9 +344,7 @@
     "_isTrimmedMode": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_atlas": {
-      "__uuid__": "b7258a86-7049-4fd2-bd7f-a27c3bfdb4f5"
-    }
+    "_atlas": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -426,7 +420,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "b284294a-d5ec-49bc-ab18-5cd0c49252c9"
+      "__uuid__": "2e6ebed1-0b6d-4382-90cf-6fb7f1636d29"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -441,9 +435,7 @@
     "_isTrimmedMode": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_atlas": {
-      "__uuid__": "b7258a86-7049-4fd2-bd7f-a27c3bfdb4f5"
-    }
+    "_atlas": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -519,7 +511,7 @@
     },
     "_enabled": true,
     "_spriteFrame": {
-      "__uuid__": "d11c4a7b-c5ee-45aa-ad1c-6a0d2ba02b9d"
+      "__uuid__": "d14a7b4a-cada-4f62-99e8-fb4b9d94ecdd"
     },
     "_type": 0,
     "_sizeMode": 0,
@@ -534,9 +526,7 @@
     "_isTrimmedMode": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_atlas": {
-      "__uuid__": "b7258a86-7049-4fd2-bd7f-a27c3bfdb4f5"
-    }
+    "_atlas": null
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -584,7 +574,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 30,
+      "width": 31,
       "height": 50
     },
     "_rotationX": 0,
@@ -593,8 +583,8 @@
     "_scaleY": 1,
     "_position": {
       "__type__": "cc.Vec2",
-      "x": -54,
-      "y": 90
+      "x": -46.9,
+      "y": 76.7
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -614,7 +604,9 @@
     "_N$string": "<outline width=4><color=#000000>1<color></outline>",
     "_N$horizontalAlign": 0,
     "_N$fontSize": 40,
-    "_N$font": null,
+    "_N$font": {
+      "__uuid__": "97544290-4d29-4c36-8616-572146538597"
+    },
     "_N$maxWidth": 0,
     "_N$lineHeight": 50,
     "_N$imageAtlas": null,
@@ -666,7 +658,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 287,
+      "width": 276,
       "height": 50
     },
     "_rotationX": 0,
@@ -696,7 +688,9 @@
     "_N$string": "<outline width=4><color=#000000>AWDDWDAWD<color></outline>",
     "_N$horizontalAlign": 0,
     "_N$fontSize": 40,
-    "_N$font": null,
+    "_N$font": {
+      "__uuid__": "97544290-4d29-4c36-8616-572146538597"
+    },
     "_N$maxWidth": 0,
     "_N$lineHeight": 50,
     "_N$imageAtlas": null,

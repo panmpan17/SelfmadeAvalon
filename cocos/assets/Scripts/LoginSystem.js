@@ -15,7 +15,6 @@ cc.Class({
     },
 
     start () {
-        this.loginBtn.on("touchstart", this.login, this);
         // automatically login
         // this.login();
     },
@@ -33,6 +32,9 @@ cc.Class({
         netControl.connect();
         netControl._sock.onopen = this.onLoginOpen.bind(this);
         netControl._sock.onmessage = this.onLoginMessage.bind(this);
+        netControl._sock.onclose = function(e) {
+            alert("沒有連線");
+        }
     },
 
     onLoginOpen: function () {

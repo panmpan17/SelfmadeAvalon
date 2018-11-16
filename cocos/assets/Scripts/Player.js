@@ -6,6 +6,8 @@ cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     onLoad () {
+        this.name = this.name == undefined? null: this.name;
+        this.num = this.num == undefined? null: this.num;
         this.card = this.node.getChildByName("Card");
         this.captainMark = this.node.getChildByName("Captain");
         this.missionMark = this.node.getChildByName("Mission");

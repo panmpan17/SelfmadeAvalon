@@ -22,12 +22,15 @@ cc.Class({
 		this.assassin = false;
         this.teamates = [];
         
-		this.board = this.node.getChildByName("Board");
-		this.failedGroup = this.board.getChildByName("Failed");
-		this.confirm = this.board.getChildByName("Confirm");
+		// this.board = this.node.getChildByName("Board");
+		this.tokenGroup = this.node.getChildByName("Token");
+		this.failedNode = this.node.getChildByName("Failed");
+		this.confirm = this.node.getChildByName("Confirm");
 
         this.cards = this.node.getChildByName("Cards");
 		this.showCards = this.node.getChildByName("ShowCards");
+		this.existCards = this.node.getChildByName("ExistCard");
+		this.recordsNode = this.node.getChildByName("Record");
 
         this.story = this.node.getChildByName("Story");
 		this.storytext = this.story.getChildByName("Text").getComponent(cc.Label);
@@ -40,23 +43,25 @@ cc.Class({
 		this.success = this.mission.getChildByName("Success");
 		this.fail = this.mission.getChildByName("Fail");
 
-		this.tokenGroup = this.board.getChildByName("Token");
-
-        this.STORYTIME = 4;
+        this.STORYTIME = 2.5;
         this.PERCIVALSTORY = [
-            {text: "派西維爾睜眼\n魔甘娜和梅林豎起大拇指", callback: this.percivalSee.bind(this)},
-            {text: "派西維爾閉眼\n魔甘娜和梅林把手收起來"},
+            {text: "派西維爾睜眼\n\n魔甘娜和梅林豎起大拇指", callback: this.percivalSee.bind(this)},
+            {text: "派西維爾閉眼\n\n魔甘娜和梅林把手收起來"},
         ]
-        this.ENDSTORY = {text: "天亮了\n所有人睜開眼睛", callback: this.storyEn.bind(this)};
+        this.ENDSTORY = {text: "天亮了\n\n所有人睜開眼睛", callback: this.storyEnd.bind(this)};
 
         this.storyNum = 0;
         this.storySequence = [
             {text: "天黑請閉眼", callback: null},
             {text: "壞人請睜眼相認", callback: this.evilSee.bind(this)},
             {text: "壞人請閉眼", callback: null},
-            {text: "梅林睜眼\n除了莫德雷德\n壞人豎起大拇指", callback: this.merlinSee.bind(this)},
-            {text: "梅林閉眼\n壞人把手收起來", callback: null},
-        ];
+            {text: "梅林睜眼\n\n除了莫德雷德\n\n壞人豎起大拇指", callback: this.merlinSee.bind(this)},
+            {text: "梅林閉眼\n\n壞人把手收起來", callback: null},
+		];
+		
+		this.story.active = true;
+		this.existCards.active = false;
+		this.recordsNode.active = false;
     },
 
     start () {
@@ -65,6 +70,7 @@ cc.Class({
         }
         this.storySequence.push(this.ENDSTORY);
 
+		this.setupBoard();
         this.spawnCards();
 		this.showStory();
 		netControl._sock.onmessage = this.onPrepareMessage.bind(this);
@@ -94,33 +100,62 @@ cc.Class({
 
     // update (dt) {},
 
-    changeBoard (num) {
-        this.board.getComponent(cc.Sprite).spriteFrame = this.controller.atlas._spriteFrames["b" + num];
+    setupBoard () {
+		if (this.controller.tokenNeed["two_fail"] != null) {
+			var token = this.tokenGroup.getChildByName(this.controller.tokenNeed["two_fail"].toString());
+			token.color = new cc.Color(248, 89, 89);
+		}
+
+		var index = 0;
+		for (var need of this.controller.tokenNeed["numbers"]) {
+			var tokenText = this.tokenGroup.getChildByName(index.toString()).getChildByName("Text");
+			tokenText.getComponent(cc.Label).string = need.toString();
+			index += 1;
+		}
+
+		jythons.foreach(this.existCards._children, function (i, card) {
+			card.active = false;
+			if (this.controller.characters[i] != undefined) {
+				card.getComponent(cc.Sprite).spriteFrame = this.controller.images[this.controller.characters[i].toLowerCase()];
+				card.active = true;
+			}
+		}.bind(this));
+        // this.board.getComponent(cc.Sprite).spriteFrame = this.controller.atlas._spriteFrames["b" + num];
     },
 
     spawnCards () {
-        var x = 0;
+		var x = -410;
+		var y = 160;
         jythons.foreach(this.controller.players, function (i, player) {
-        	console.log(player);
             var card = cc.instantiate(this.playerPrefab);
-            card.x += x;
-            x += 100;
+			card.x = x;
+			card.y = y;
+
+			x += 130;
+			if (x > 10) {
+				x = -410;
+				y -= 190;
+			}
+
             card.name = player[0];
             var index = i + 1;
 
 			card.on("touchstart", this.playerClicked.bind(this, card.name));
 			this.cards.addChild(card);
 
+			card.getComponent("Player").num = i + 1;
+			card.getComponent("Player").name = player[1];
+
             if (player[0] == this.controller.userId) {
-            	card.getChildByName("Num").getComponent(cc.RichText).string = `<outline color=#288cba width=4><color=#000000>${index}<color></outline>`
-	            card.getChildByName("Name").getComponent(cc.RichText).string = `<outline color=#288cba width=4><color=#000000>${player[1]}<color></outline>`
-                card.getComponent("Player").changeCard(this.controller.atlas._spriteFrames[this.controller.role.toLowerCase()])
+            	card.getChildByName("Num").getComponent(cc.RichText).string = `<outline color=#4286f4 width=4><color=#000000>${index}<color></outline>`;
+				card.getChildByName("Name").getComponent(cc.RichText).string = `<outline color=#4286f4 width=4><color=#000000>${player[1]}<color></outline>`;
+                card.getComponent("Player").changeCard(this.controller.images[this.controller.role.toLowerCase()]);
             }
             else {
-	            card.getChildByName("Num").getComponent(cc.RichText).string = `<outline width=4><color=#000000>${index}<color></outline>`
-	            card.getChildByName("Name").getComponent(cc.RichText).string = `<outline width=4><color=#000000>${player[1]}<color></outline>`
+	            card.getChildByName("Num").getComponent(cc.RichText).string = `<outline width=4><color=#000000>${index}<color></outline>`;
+	            card.getChildByName("Name").getComponent(cc.RichText).string = `<outline width=4><color=#000000>${player[1]}<color></outline>`;
 	        }
-        }.bind(this));
+		}.bind(this));
 	},
 	
 	playerClicked (playerId) {
@@ -153,11 +188,13 @@ cc.Class({
 			this.confirming = false;
             this.teamates = [];
 
-            jythons.reapeat(function (i) {
-                var failed_token = this.failedGroup.getChildByName(i.toString());
-                if (this.failed > i) {failed_token.active = true;}
-                else {failed_token.active = false;}
-            }.bind(this), 5);
+			if (this.failed == 0) {
+				this.failedNode.active = false;
+			}
+			else {
+				this.failedNode.active = true;
+				this.failedNode.getChildByName("Text").getComponent(cc.Label).string = this.failed + " 次投票失敗";
+			}
 
 			jythons.foreach(this.cards.children, function(_, player) {
 				player.opacity = 255;
@@ -219,7 +256,8 @@ cc.Class({
 				this.vote.active  = false;
 			}
 
-			this.cards.getChildByName(data.voter).getComponent("Player").voteMark.active = true;
+			this.getPlayerCard(data.voter).voteMark.active = true;
+			// this.cards.getChildByName(data.voter).getComponent("Player")
 		}
 		else if (data.method == "ASKSUCCESS") {
 			if (data.teamate) {
@@ -243,18 +281,29 @@ cc.Class({
 				this.mission.active = false;
 			}
 
-			this.cards.getChildByName(data.voter).getComponent("Player").foldedMissionMark.active = true;
+			this.getPlayerCard(data.voter).foldedMissionMark.active = true;
+			// this.cards.getChildByName(data.voter).getComponent("Player")
 		}
 		else if (data.method == "GAMERECORD") {
 			// display record under cards
-			// record = data.record
-			var token = this.tokenGroup.getChildByName(this.round.toString());
-			token.active = true;
-			if (data.record[this.round].resault.good_evil == "good") {
-				token.getComponent(cc.Sprite).spriteFrame = this.controller.atlas._spriteFrames.good_token;
+			var text = "";
+			for (var record of data.record) {
+				text += `<color=#6495ED>${record.success} 成功</color>   <color=#FF6347>${record.fail} 失敗</color>`;
+				text += "\n<size=40>";
+				for (var id of record.team) {
+					text += this.getPlayerCard(id).num + ". ";
+				}
+				text += "</size>\n";
+			}
+
+			this.recordsNode.getChildByName("RichText").getComponent(cc.RichText).string = text;
+
+			var token = this.tokenGroup.getChildByName(this.round.toString()).getChildByName("token");
+			if (data.record[data.record.length - 1].good_evil == "good") {
+				token.getComponent(cc.Sprite).spriteFrame = this.controller.images.good_token;
 			}
 			else {
-				token.getComponent(cc.Sprite).spriteFrame = this.controller.atlas._spriteFrames.evil_token;
+				token.getComponent(cc.Sprite).spriteFrame = this.controller.images.evil_token;
 			}
 
 			this.teamates = [];
@@ -265,13 +314,11 @@ cc.Class({
 			this.assassin = true;
 
 			jythons.foreach(data.evils_role_map, function (id, role) {
-				var card = this.cards.getChildByName(id)
-				card.getComponent("Player").changeCard(this.controller.atlas._spriteFrames[role.toLowerCase()])
+				this.getPlayerCard(id).changeCard(this.controller.images[role.toLowerCase()])
 			}.bind(this));
 
-			var token = this.tokenGroup.getChildByName(this.round.toString());
-			token.active = true;
-			token.getComponent(cc.Sprite).spriteFrame = this.controller.atlas._spriteFrames.good_token;
+			var token = this.tokenGroup.getChildByName(this.round.toString()).getChildByName("token");
+			token.getComponent(cc.Sprite).spriteFrame = this.controller.images.good_token;
 
 			// 顯示物梅林的文字
 			this.story.active = true;
@@ -290,8 +337,7 @@ cc.Class({
 			this.assassin = false;
 
 			jythons.foreach(data.role_map, function (id, role) {
-				var card = this.cards.getChildByName(id)
-				card.getComponent("Player").changeCard(this.controller.atlas._spriteFrames[role.toLowerCase()])
+				this.getPlayerCard(id).changeCard(this.controller.images[role.toLowerCase()])
 			}.bind(this));
 
 			if (data.is_merlin) {
@@ -305,6 +351,35 @@ cc.Class({
 			this.schedule(function() {
 				this.story.active = false;
 			}.bind(this), this.STORYTIME);
+		}
+		else if (data.method == "END") {
+			console.log(data.method);
+
+			if (data.add_token) {
+				// Add token
+			}
+
+			if (data.failed == 0) {
+				this.failedNode.active = false;
+			}
+			else {
+				this.failedNode.active = true;
+				this.failedNode.getChildByName("Text").getComponent(cc.Label).string = data.failed + " 次投票失敗";
+			}
+
+			for (var id in data.role_map) {
+				var role = data.role_map[id].toLowerCase();
+				this.getPlayerCard(id).changeCard(this.controller.images[role]);
+			}
+
+			this.storytext.string = "壞人勝利！";
+			this.story.active = true;
+			this.schedule(function() {
+				this.story.active = false;
+			}.bind(this), this.STORYTIME);
+		}
+		else {
+			console.log(data.method);
 		}
     },
 
@@ -337,8 +412,8 @@ cc.Class({
     },
     seeEvil () {
         jythons.foreach(this.controller.specialPower, function (_, id) {
-            var card = this.cards.getChildByName(id);
-            card.getComponent("Player").changeCard(this.controller.atlas._spriteFrames.bad);
+            var card = this.getPlayerCard(id);
+			card.changeCard(this.controller.images.bad);
             card.parent = this.showCards;
 
             this.scheduleOnce(function () {
@@ -348,12 +423,36 @@ cc.Class({
     },
 
     percivalSee () {
-        // console.log(this.storyNum);
+        if (this.controller.role == "PERCIVAL") {
+			console.log(this.controller.specialPower);	
+
+			jythons.foreach(this.controller.specialPower, function (_, id) {
+				this.getPlayerCard(id).changeCard(this.controller.images.morganamerlin);
+				card.parent = this.showCards;
+	
+				this.scheduleOnce(function () {
+					card.parent = this.cards;
+				}, this.STORYTIME - 0.25);
+			}.bind(this));
+		}
     },
 
-    storyEn () {
+    storyEnd () {
 		this.storytext.string = "";
-        this.story.active = false;
-        netControl.send({method: "STORYFINISH"});
-    },
+		this.story.active = false;
+		this.existCards.active = true;
+		this.recordsNode.active = true;
+		netControl.send({method: "STORYFINISH"});
+		
+		this.scheduleOnce(function () {
+			for (var card of this.existCards._children) {
+				card.width = 100;
+				card.height = 159;
+			}
+		}.bind(this), 0.1);
+	},
+	
+	getPlayerCard(id) {
+		return this.cards.getChildByName(id).getComponent("Player");
+	}
 });

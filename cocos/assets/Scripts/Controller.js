@@ -4,9 +4,14 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        atlas: {
+        // atlas: {
+        //     default: null,
+        //     type: cc.SpriteAtlas,
+        // },
+
+        images: {
             default: null,
-            type: cc.SpriteAtlas,
+            type: require("TextureMatch"),
         }
     },
 
@@ -58,15 +63,9 @@ cc.Class({
         this.hasPercival = data.has_percival;
         this.tokenNeed = data.token_need;
         this.players_num = data.players.length;
+        this.characters = data.characters;
 
         this.prepareSystem.node.active = false;
         this.gameSystem.node.active = true;
-
-        if (this.players_num >= 5) {
-            this.gameSystem.changeBoard(this.players_num);
-        }
-        else {
-            this.gameSystem.changeBoard(jythons.random.randint(5, 10));
-        }
     }
 });
