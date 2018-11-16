@@ -3,30 +3,42 @@ const netControl = require("NetControl");
 cc.Class({
     extends: cc.Component,
 
-    properties: {},
+    properties: {
+		controller: {
+			default: null,
+			type: require("Controller"),
+        },
+        nameInput: {
+            default: null,
+            type: cc.EditBox,
+        },
+        secretInput: {
+            default: null,
+            type: cc.EditBox,
+        },
+        waitingNode: {
+            default: null,
+            type: cc.Node,
+        },
+        hostInput: {
+            default: null,
+            type: cc.EditBox,
+        },
+        portInput: {
+            default: null,
+            type: cc.EditBox,
+        },
+    },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad () {
-        this.nameNode = this.node.getChildByName("NameInput");
-        this.secretNode = this.node.getChildByName("SecretInput");
-        this.loginBtn = this.node.getChildByName("LoginBtn");
-        this.waitingNode = this.node.getChildByName("Waiting");
-        this.hostInput = this.node.getChildByName("IP").getChildByName("host").getComponent(cc.EditBox);
-        this.portInput = this.node.getChildByName("IP").getChildByName("port").getComponent(cc.EditBox);
-    },
-
-    start () {
-        // automatically login
-        // this.login();
         this.hostInput.string = window.location.hostname;
     },
 
-    // update (dt) {},
-
     login () {
-        this.name = this.nameNode.getComponent(cc.EditBox).string;
-        this.secret = this.secretNode.getComponent(cc.EditBox).string;
+        this.name = this.nameInput.string;
+        this.secret = this.secretInput.string;
 
         if (this.name == "" || this.secret == "") {
             return;

@@ -4,24 +4,31 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        // atlas: {
-        //     default: null,
-        //     type: cc.SpriteAtlas,
-        // },
-
         images: {
             default: null,
             type: require("TextureMatch"),
+        },
+        loginSystemNode: {
+            default: null,
+            type: cc.Node,
+        },
+        prepareSystemNode: {
+            default: null,
+            type: cc.Node,
+        },
+        gameSystemNode: {
+            default: null,
+            type: cc.Node,
+        },
+        connectNumLabel: {
+            default: null,
+            type: cc.Label,
         }
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad () {
-        this.loginSystem = this.node.getChildByName("LoginSystem").getComponent("LoginSystem");
-        this.prepareSystem = this.node.getChildByName("PrepareSystem").getComponent("PrepareSystem");
-        this.gameSystem = this.node.getChildByName("GameSystem").getComponent("GameSystem");
-
         this.varify = false;
         this.userId = null;
         this.needready = false;
@@ -36,9 +43,9 @@ cc.Class({
     },
 
     start () {
-        this.loginSystem.controller = this;
-        this.prepareSystem.controller = this;
-        this.gameSystem.controller = this;
+        this.loginSystem = this.loginSystemNode.getComponent("LoginSystem");
+        this.prepareSystem = this.prepareSystemNode.getComponent("PrepareSystem");
+        this.gameSystem = this.gameSystemNode.getComponent("GameSystem");
     },
 
     // update (dt) {},
@@ -50,7 +57,7 @@ cc.Class({
         this.loginSystem.node.active = false;
         this.prepareSystem.node.active = true;
 
-        this.prepareSystem.connectedNum.getComponent(cc.Label).string = "連線人數: " + data.players_num;
+        this.connectNumLabel.string = "連線人數: " + data.players_num;
     },
 
     startGame (data) {

@@ -3,37 +3,40 @@ const netControl = require("NetControl");
 cc.Class({
     extends: cc.Component,
 
-    properties: {},
+    properties: {
+        controller: {
+			default: null,
+			type: require("Controller"),
+        },
+        connectedNumLabel: {
+            default: null,
+            type: cc.Label,
+        },
+        readyNumLabel: {
+            default: null,
+            type: cc.Label,
+        },
+        readyBtn: {
+            default: null,
+            type: cc.Toggle,
+        }
+    },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad () {
-        this.connectedNum = this.node.getChildByName("ReadyNum").getChildByName("ConnectedText");
-        this.readyNum = this.node.getChildByName("ReadyNum").getChildByName("ReadyText");
-        this.readyBtn = this.node.getChildByName("ReadyBtn").getComponent(cc.Toggle);
-
         netControl._sock.onmessage = this.onPrepareMessage.bind(this);
-        // this.readyBtn.on("touchstart", this.ready, this);
     },
-
-    start () {
-
-    },
-
-    // update (dt) {},
 
     onPrepareMessage (event) {
         var data = JSON.parse(event.data);
 
         if (data.method == "WAITING") {
-            this.connectedNum.getComponent(cc.Label).string = "連線人數: " + data.players_num;
+            this.connectedNumLabel.string = "連線人數: " + data.players_num;
         }
         else if (data.method == "NEEDREADY") {
             this.readyBtn.interactable = true;
             this.controller.needready = true;
-
-            // automatically ready
-            // this.ready();
         }
         else if (data.method == "CONFIRMREADY") {
             if (data.user == this.controller.user_id) {
@@ -41,7 +44,7 @@ cc.Class({
                 this.controller.onReady = true;
             }
 
-            this.readyNum.getComponent(cc.Label).string = "準備人數: " + data.player_ready;
+            this.readyNumLabel.string = "準備人數: " + data.player_ready;
         }
         else if (data.method == "START") {
             this.controller.startGame(data);

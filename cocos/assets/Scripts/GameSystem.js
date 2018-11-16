@@ -9,6 +9,70 @@ cc.Class({
             default: null,
             type: cc.Prefab,
 		},
+		controller: {
+			default: null,
+			type: require("Controller"),
+		},
+		tokenGroup: {
+			default: null,
+			type: cc.Node,
+		},
+		failedNode: {
+			default: null,
+			type: cc.Node,
+		},
+		confirm: {
+			default: null,
+			type: cc.Node,
+		},
+		cards: {
+			default: null,
+			type: cc.Node,
+		},
+		showCards: {
+			default: null,
+			type: cc.Node,
+		},
+		existCards: {
+			default: null,
+			type: cc.Node,
+		},
+		recordsNode: {
+			default: null,
+			type: cc.Node,
+		},
+		story: {
+			default: null,
+			type: cc.Node,
+		},
+		storyLabel: {
+			default: null,
+			type: cc.Label,
+		},
+		vote: {
+			default: null,
+			type: cc.Node,
+		},
+		reject: {
+			default: null,
+			type: cc.Node,
+		},
+		approve: {
+			default: null,
+			type: cc.Node,
+		},
+		mission: {
+			default: null,
+			type: cc.Node,
+		},
+		success: {
+			default: null,
+			type: cc.Node,
+		},
+		fail: {
+			default: null,
+			type: cc.Node,
+		},
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -21,27 +85,6 @@ cc.Class({
 		this.confirming = false;
 		this.assassin = false;
         this.teamates = [];
-        
-		// this.board = this.node.getChildByName("Board");
-		this.tokenGroup = this.node.getChildByName("Token");
-		this.failedNode = this.node.getChildByName("Failed");
-		this.confirm = this.node.getChildByName("Confirm");
-
-        this.cards = this.node.getChildByName("Cards");
-		this.showCards = this.node.getChildByName("ShowCards");
-		this.existCards = this.node.getChildByName("ExistCard");
-		this.recordsNode = this.node.getChildByName("Record");
-
-        this.story = this.node.getChildByName("Story");
-		this.storytext = this.story.getChildByName("Text").getComponent(cc.Label);
-
-		this.vote = this.node.getChildByName("Vote");
-		this.reject = this.vote.getChildByName("Reject");
-		this.approve = this.vote.getChildByName("Approve");
-
-		this.mission = this.node.getChildByName("Mission");
-		this.success = this.mission.getChildByName("Success");
-		this.fail = this.mission.getChildByName("Fail");
 
         this.STORYTIME = 2.5;
         this.PERCIVALSTORY = [
@@ -322,7 +365,7 @@ cc.Class({
 
 			// 顯示物梅林的文字
 			this.story.active = true;
-			this.storytext.string = "壞人刺殺梅林";
+			this.storyLabel.string = "壞人刺殺梅林";
 			this.schedule(function() {
 				this.story.active = false;
 			}.bind(this), this.STORYTIME);
@@ -341,10 +384,10 @@ cc.Class({
 			}.bind(this));
 
 			if (data.is_merlin) {
-				this.storytext.string = "刺梅林成功 !";
+				this.storyLabel.string = "刺梅林成功 !";
 			}
 			else {
-				this.storytext.string = "刺錯人了, 哈哈 !";
+				this.storyLabel.string = "刺錯人了, 哈哈 !";
 			}
 
 			this.story.active = true;
@@ -372,7 +415,7 @@ cc.Class({
 				this.getPlayerCard(id).changeCard(this.controller.images[role]);
 			}
 
-			this.storytext.string = "壞人勝利！";
+			this.storyLabel.string = "壞人勝利！";
 			this.story.active = true;
 			this.schedule(function() {
 				this.story.active = false;
@@ -389,7 +432,7 @@ cc.Class({
     showStory () {
         this.schedule(function () {
             var story = this.storySequence[this.storyNum];
-            this.storytext.string = story.text;
+            this.storyLabel.string = story.text;
 
             if (story.callback != null) {
                 story.callback();
@@ -438,7 +481,7 @@ cc.Class({
     },
 
     storyEnd () {
-		this.storytext.string = "";
+		this.storyLabel.string = "";
 		this.story.active = false;
 		this.existCards.active = true;
 		this.recordsNode.active = true;
