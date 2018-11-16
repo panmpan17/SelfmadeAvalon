@@ -12,11 +12,14 @@ cc.Class({
         this.secretNode = this.node.getChildByName("SecretInput");
         this.loginBtn = this.node.getChildByName("LoginBtn");
         this.waitingNode = this.node.getChildByName("Waiting");
+        this.hostInput = this.node.getChildByName("IP").getChildByName("host").getComponent(cc.EditBox);
+        this.portInput = this.node.getChildByName("IP").getChildByName("port").getComponent(cc.EditBox);
     },
 
     start () {
         // automatically login
         // this.login();
+        this.hostInput.string = window.location.hostname;
     },
 
     // update (dt) {},
@@ -29,6 +32,7 @@ cc.Class({
             return;
         }
 
+        netControl.ip = "ws://" + this.hostInput.string + ":" + this.portInput.string;
         netControl.connect();
         netControl._sock.onopen = this.onLoginOpen.bind(this);
         netControl._sock.onmessage = this.onLoginMessage.bind(this);
