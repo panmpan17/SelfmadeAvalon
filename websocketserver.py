@@ -51,9 +51,13 @@ class Server(WebsocketServer):
                         yield from self.send(p["ws"], response)
             return
 
+        # Remove user in other varible
         yield from super().disconnect(_id, ws)
-        player_ready = len([1 for _id in self.game.team if _id in self.ready])
+        if _id in self.game.users:
+            self.game.users.remove(_id)
 
+        # Recount total players, and send message back
+        player_ready = len([1 for _id in self.game.team if _id in self.ready])
         response = {"method": method.DISCONNECT, "user": _id,
                     "players_num": len(self.connected),
                     "player_ready": player_ready}
@@ -62,7 +66,6 @@ class Server(WebsocketServer):
             yield from self.send(p["ws"], response)
 
     def start_game(self):
-        print("Start Game")
         self.game.started = True
 
         self.game.set_tokens()
@@ -100,13 +103,11 @@ class Server(WebsocketServer):
                         yield from self.send(self.connected[p]["ws"], response)
                 return
 
-            # Chose new captain
-            self.game.vote_failed()
-
+            self.game.failed += 1
             if self.game.failed >= 5:
                 # Game over evils win
                 response = self.game.evil_win(add_token=False)
-
+                print(response)
                 with (yield from self.lock):
                     for p in self.game.users:
                         yield from self.send(self.connected[p]["ws"], response)
@@ -130,7 +131,7 @@ class Server(WebsocketServer):
         resault = self.game.all_executed()
 
         if resault is not None:
-            resault = self.game.next_round()
+            resault = self.game.check_mission()
             if resault is not None:
                 with (yield from self.lock):
                     for p in self.game.users:

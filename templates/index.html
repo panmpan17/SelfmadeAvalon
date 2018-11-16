@@ -1,95 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-	<meta charset="UTF-8">
-	<title>麥瓦隆</title>
-	<link rel="stylesheet" href="/static/css/index.css">
-	<link rel="stylesheet" href="/static/css/login.css">
-	<link rel="stylesheet" href="/static/css/game.css">
-	<script>
-		if (!("path" in Event.prototype))
-		Object.defineProperty(Event.prototype, "path", {
-		  get: function() {
-		    var path = [];
-		    var currentElem = this.target;
-		    while (currentElem) {
-		      path.push(currentElem);
-		      currentElem = currentElem.parentElement;
-		    }
-		    if (path.indexOf(window) === -1 && path.indexOf(document) === -1)
-		      path.push(document);
-		    if (path.indexOf(window) === -1)
-		      path.push(window);
-		    return path;
-		  }
-		});
-	</script>
+  <meta charset="utf-8">
+
+  <title>Cocos Creator | cocos</title>
+
+  <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+  <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
+
+  <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- force webkit on 360 -->
+  <meta name="renderer" content="webkit"/>
+  <meta name="force-rendering" content="webkit"/>
+  <!-- force edge on IE -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- force full screen on some browser -->
+  <meta name="full-screen" content="yes"/>
+  <meta name="x5-fullscreen" content="true"/>
+  <meta name="360-fullscreen" content="true"/>
+  
+  <!-- force screen orientation on some browser -->
+  <meta name="screen-orientation" content=""/>
+  <meta name="x5-orientation" content="">
+
+  <!--fix fireball/issues/3568 -->
+  <!--<meta name="browsermode" content="application">-->
+  <meta name="x5-page-mode" content="app">
+
+  <!--<link rel="apple-touch-icon" href=".png" />-->
+  <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+
+  <link rel="stylesheet" type="text/css" href="style-mobile.css"/>
+
 </head>
 <body>
-	<main>
-		<section id="login">
-			<input id="name" type="text" placeholder="名字"> <br>
-			<input id="secret" type="password" placeholder="密語">
-			<button id="login" onclick="login()">登入</button>
-			<button id="rejoin" onclick="rejoin()">重新加入</button>
-
-			<button id="turtorial">教學</button>
-		</section>
-		<section id="prepare">
-			<div id="player-number">
-				<h3>連線人數: <span id="waiting-number">0</span></h3>
-				<h4>已準備人數: <span id="ready-number">0</span></h4>
-				<h5>觀看人數: <span id="spectating-number">0</span></h5>
-			</div> 
-
-			<button id="ready" class="disable" onclick="ready()">準備</button>
-			<button id="togglespectate"></button>
-		</section>
-		<section id="game">
-			<div id="upper">
-				<div id="board">
-					<div id="tokens"></div>
-					<div id="failed"></div>
-				</div>
-				<div id="confirm">
-					<h2 id="text" onclick="confirmTeam()">出發</h2>
-				</div>
-			</div>
-			<div id="cards"></div>
-
-			<div id="reconnect">
-				<h3>斷線玩家</h3>
-				<em>* 在選單選擇重新加入, 並輸入名字後面的代碼</em>
-				<div id="text"></div>
-			</div>
-
-			<!-- <div id="captain"></div> -->
-			<div id="story">
-				<h2 id="text"></h4>
-			</div>
-			<div id="vote">
-				<div id="approve" onclick="approveTeam()"></div>
-				<div id="reject" onclick="rejectTeam()"></div>
-			</div>
-			<div id="mission">
-				<div id="success" onclick="missionSuccess()"></div>
-				<div id="fail" onclick="missionFail()"></div>
-			</div>
-		</section>
-	</main>
-
-	<!-- popup frame -->
-	<div id="black-bg"></div>
-	<div id="waiting"></div>
-	<div id="socketclose">伺服器斷線，試試重新整理</div>
-	<div id="wrongsecret">密語錯誤 !</div>
-	<div id="assassin-merlin">準備刺殺梅林</div>
-
-
-	<script src="/static/script/jquery.min.js"></script>
-	<script src="/static/script/jythons.js"></script>
-	<script src="/static/script/login.js"></script>
-	<script src="/static/script/story.js"></script>
-	<script src="/static/script/game.js"></script>
+  <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+  <div id="splash">
+    <div class="progress-bar stripes">
+      <span style="width: 0%"></span>
+    </div>
+  </div>
+<script src="src/settings.js" charset="utf-8"></script>
+<script src="vconsole.min.js"></script>
+<script src="main.js" charset="utf-8"></script>
 </body>
 </html>

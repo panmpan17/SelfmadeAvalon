@@ -1,37 +1,38 @@
 import random
 
+
 class Game:
     def __init__(self, game_setting, method):
         self.game_setting = game_setting
         self.method = method
 
         self.started = False
-        self.player_num = 0 # The number of players
-        self.story_finish = 0 # The number of players that watched story
-        self.captain = None # The player that chose team
+        self.player_num = 0  # The number of players
+        self.story_finish = 0  # The number of players that watched story
+        self.captain = None  # The player that chose team
 
-        self.users = [] # Player in the game
-        self.spectating = [] # Player not in the game
+        self.users = []  # Player in the game
+        self.spectating = []  # Player not in the game
 
-        self.team = [] # Player chosen to execute mission
+        self.team = []  # Player chosen to execute mission
 
-        self.tokens = [] # Tokens Record, 1 is good, -1 is evil
-        self.token_need = [] # The number of players that tokens need
-        self.approve = [] # Who aprrove the team
-        self.reject = [] # Who reject the team
+        self.tokens = []  # Tokens Record, 1 is good, -1 is evil
+        self.token_need = []  # The number of players that tokens need
+        self.approve = []  # Who aprrove the team
+        self.reject = []  # Who reject the team
 
-        self.success = [] # Who successfully execute mission
-        self.fail = [] # Who failed to execute misson 
+        self.success = []  # Who successfully execute mission
+        self.fail = []  # Who failed to execute misson
 
-        self.record = {0: {"votes": []}} # Record of players choice
+        self.record = []  # Record of players choice
 
-        self.role_map = None # Player_id to role
+        self.role_map = None  # Player_id to role
 
-        self.chosing = False # Is captain chosing
-        self.confirming = False # Is players comfirming team
+        self.chosing = False  # Is captain chosing
+        self.confirming = False  # Is players comfirming team
 
         self.round = 0
-        self.failed = 0 # The number of round that reject greater than approve
+        self.failed = 0  # The number of round that reject greater than approve
 
     def set_tokens(self):
         self.token_need = self.game_setting["token_need"][str(len(
@@ -41,23 +42,31 @@ class Game:
         return [[players[i]["id"], players[i]["name"]] for i in self.users]
 
     def set_characters(self, connected):
-        characters = self.game_setting["character_set"][
-            str(len(self.users))].copy()
-        random.shuffle(characters)
+        chars = self.game_setting["character_set"][str(len(self.users))]
+        suf_chars = chars.copy()
+        random.shuffle(suf_chars)
 
-        self.role_map = dict(zip(self.users, characters))
+        self.role_map = dict(zip(self.users, suf_chars))
 
         response = {
             "method": self.method.START,
             "players": self.get_teams(connected),
             "token_need": self.token_need,
-            "has_percival": ("PERCIVAL" in characters)}
+            "has_percival": ("PERCIVAL" in chars),
+            "characters": chars}
         return response
 
     def has_finish_story(self):
         return len(self.users) == self.story_finish
 
     def chose_captain(self):
+        # Clean up relative list
+        self.team.clear()
+        self.approve.clear()
+        self.reject.clear()
+        self.success.clear()
+        self.fail.clear()
+
         if self.captain is None:
             self.captain = random.choice(self.users)
         else:
@@ -125,13 +134,7 @@ class Game:
             return len(self.approve) > len(self.reject)
         return None
 
-    def vote_failed(self):
-        self.failed += 1
-
     def reset_votes(self):
-        self.record[self.round]["votes"].append(
-            {"approve": self.approve.copy(), "reject": self.reject.copy()})
-
         self.approve.clear()
         self.reject.clear()
 
@@ -156,30 +159,24 @@ class Game:
             return True
         return None
 
-    def next_round(self):
-        self.record[self.round]["resault"] = {
-            "success": len(self.success), "fail": len(self.fail),
-            "team": self.team.copy()}
+    def check_mission(self):
+        record = {"success": len(self.success), "fail": len(self.fail),
+                  "team": self.team.copy()}
 
         if self.token_need["two_fail"] == self.round and len(self.fail) <= 1:
             self.tokens.append(1)
-            self.record[self.round]["resault"]["good_evil"] = "good"
+            record["good_evil"] = "good"
         if len(self.fail) > 0:
             self.tokens.append(-1)
-            self.record[self.round]["resault"]["good_evil"] = "evil"
+            record["good_evil"] = "evil"
         else:
             self.tokens.append(1)
-            self.record[self.round]["resault"]["good_evil"] = "good"
+            record["good_evil"] = "good"
 
-        self.team.clear()
-        self.approve.clear()
-        self.reject.clear()
-        self.success.clear()
-        self.fail.clear()
+        self.record.append(record)
+
         self.round += 1
         self.chose_captain()
-
-        self.record[self.round] = {"votes": []}
 
         if self.tokens.count(1) == 3:
             evils_role_map = {}
@@ -195,12 +192,12 @@ class Game:
     def evil_win(self, add_token=True):
         return {"method": self.method.END, "tokens": self.tokens,
                 "add_token": add_token, "failed": self.failed,
-                "role_map": self.role_map, "win": "evil"}
+                "role_map": self.role_map}
 
-    def good_win(self):
-        return {"method": self.method.END, "tokens": self.tokens,
-                "failed": self.failed, "role_map": self.role_map,
-                "win": "good"}
+    # def good_win(self):
+    #     return {"method": self.method.END, "tokens": self.tokens,
+    #             "failed": self.failed, "role_map": self.role_map,
+    #             "win": "good"}
 
     def disconnect(self, _id):
         try:

@@ -1,6 +1,4 @@
 import flask
-import os
-import json
 import sys
 import argparse
 
@@ -9,11 +7,7 @@ class Dummy:
     pass
 
 
-app = flask.Flask(__name__)
-
-# load game setting
-game_setting = json.load(open("game_setting.json"))
-game_setting["images"] = os.listdir(os.path.join(app.static_folder, 'images'))
+app = flask.Flask(__name__, static_url_path="")
 
 
 @app.route("/")
@@ -24,11 +18,6 @@ def index():
 @app.route("/test")
 def test():
     return flask.render_template("test.html")
-
-
-@app.route("/game_setting")
-def settings():
-    return flask.jsonify(game_setting)
 
 
 if __name__ == "__main__":
