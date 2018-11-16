@@ -236,7 +236,7 @@ cc.Class({
 			}
 			else {
 				this.failedNode.active = true;
-				this.failedNode.getChildByName("Text").getComponent(cc.Label).string = this.failed + " 次投票失敗";
+				this.failedNode.getChildByName("Text").getComponent(cc.Label).string = this.failed + "/5 次投票失敗";
 			}
 
 			jythons.foreach(this.cards.children, function(_, player) {
@@ -391,9 +391,6 @@ cc.Class({
 			}
 
 			this.story.active = true;
-			this.schedule(function() {
-				this.story.active = false;
-			}.bind(this), this.STORYTIME);
 		}
 		else if (data.method == "END") {
 			console.log(data.method);

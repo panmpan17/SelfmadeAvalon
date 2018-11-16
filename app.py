@@ -29,6 +29,6 @@ if __name__ == "__main__":
     psr.parse_args(sys.argv[1:], namespace=vs)
 
     if vs.o:
-        app.run(host="0.0.0.0", port=8050, debug=True)
+        app.run(host="0.0.0.0", port=8060, debug=True)
     else:
-        app.run(host="localhost", port=8050, debug=True)
+        app.run(host="localhost", port=8060, debug=True)

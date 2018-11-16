@@ -1,14 +1,14 @@
 {
   "ver": "2.0.0",
-  "uuid": "706d4c87-60b0-4ce7-b05f-da954c4660e5",
+  "uuid": "d7dde4a7-d30a-4ce4-b65c-8c678f0087df",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
   "subMetas": {
     "merlin": {
       "ver": "1.0.3",
-      "uuid": "32602913-416d-4961-b612-684026a98f65",
-      "rawTextureUuid": "706d4c87-60b0-4ce7-b05f-da954c4660e5",
+      "uuid": "ad3f15f6-b8b6-4a03-b01c-086fc2c8bfc9",
+      "rawTextureUuid": "d7dde4a7-d30a-4ce4-b65c-8c678f0087df",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

@@ -166,7 +166,7 @@ class Game:
         if self.token_need["two_fail"] == self.round and len(self.fail) <= 1:
             self.tokens.append(1)
             record["good_evil"] = "good"
-        if len(self.fail) > 0:
+        elif len(self.fail) > 0:
             self.tokens.append(-1)
             record["good_evil"] = "evil"
         else:

@@ -224,7 +224,7 @@
       }
     ],
     "_tag": -1,
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 41
@@ -1732,13 +1732,13 @@
       "__uuid__": "94fbb926-b9fa-4525-a73a-99bd87c49938"
     },
     "good": {
-      "__uuid__": "a88ab028-dcc7-43d5-8727-5e1194c5e829"
+      "__uuid__": "7fbe2036-a2e4-423f-a5e6-156ffbf740f2"
     },
     "lake": {
       "__uuid__": "71cbe84c-b8c1-4cc3-92c5-f7f0ac9a3eef"
     },
     "merlin": {
-      "__uuid__": "32602913-416d-4961-b612-684026a98f65"
+      "__uuid__": "ad3f15f6-b8b6-4a03-b01c-086fc2c8bfc9"
     },
     "mission": {
       "__uuid__": "6d96c193-cbec-4801-a74e-d281a2b9c8ee"
@@ -2525,7 +2525,7 @@
       }
     ],
     "_tag": -1,
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 158
@@ -3939,7 +3939,7 @@
       }
     ],
     "_tag": -1,
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 99
@@ -3966,8 +3966,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 230.8,
-      "height": 43.3
+      "width": 252,
+      "height": 43
     },
     "_rotationX": 0,
     "_rotationY": 0,
@@ -3975,8 +3975,8 @@
     "_scaleY": 1,
     "_position": {
       "__type__": "cc.Vec2",
-      "x": -80.49999999999997,
-      "y": 298.4
+      "x": -70,
+      "y": 298
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -4018,7 +4018,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 417,
+      "width": 486,
       "height": 72
     },
     "_rotationX": 0,
@@ -4055,7 +4055,7 @@
     },
     "_isSystemFontUsed": false,
     "_spacingX": 0,
-    "_N$string": "3 次投票失敗",
+    "_N$string": "0/5 次投票失敗",
     "_N$horizontalAlign": 1,
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
@@ -4100,9 +4100,9 @@
       "__id__": 2
     },
     "_alignFlags": 9,
-    "_left": 284.1,
+    "_left": 284,
     "_right": 0,
-    "_top": -0.04999999999997584,
+    "_top": 0.5,
     "_bottom": 0,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
@@ -5421,8 +5421,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 99,
-      "height": 132
+      "width": 100,
+      "height": 159
     },
     "_rotationX": 0,
     "_rotationY": 0,
@@ -5499,8 +5499,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 99,
-      "height": 132
+      "width": 100,
+      "height": 159
     },
     "_rotationX": 0,
     "_rotationY": 0,
