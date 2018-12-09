@@ -467,7 +467,8 @@ cc.Class({
 			console.log(this.controller.specialPower);	
 
 			jythons.foreach(this.controller.specialPower, function (_, id) {
-				this.getPlayerCard(id).changeCard(this.controller.images.morganamerlin);
+				var card = this.getPlayerCard(id);
+				card.changeCard(this.controller.images.morganamerlin);
 				card.parent = this.showCards;
 	
 				this.scheduleOnce(function () {
