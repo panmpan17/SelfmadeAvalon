@@ -12,7 +12,7 @@
     "character_set": {
         "2": ["MERLIN", "ASSASSIN"],
         "3": ["MERLIN", "PERCIVAL", "MORGANA"],
-        "5": ["MERLIN", "SERVANT", "SERVANT", "MORDRED", "ASSASSIN"],
+        "5": ["MERLIN", "PERCIVAL", "SERVANT", "MORGANA", "ASSASSIN"],
         "6": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "ASSASSIN", "MORGANA"],
         "7": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
         "8": ["MERLIN", "PERCIVAL", "SERVANT", "SERVANT", "SERVANT", "MORDRED", "MORGANA", "ASSASSIN"],
@@ -78,7 +78,7 @@
         "KILLMERLIN",
         "END",
 
-        "DISCONNECT",
+        "READYDISCON",
         "DISCONNECTTIMER"
     ]
 }

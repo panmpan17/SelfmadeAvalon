@@ -1,6 +1,15 @@
 import random
 
 
+class GameStage:
+    WAITING = "WARTING"
+    STORY = "STORY"
+    CHOSETEAM = "CHOSETEAM"
+    VOTEING = "VOTEING"
+    ONMISSION = "ONMISSION"
+    ASSASININ = "ASSASININ"
+
+
 class Game:
     def __init__(self, game_setting, method):
         self.game_setting = game_setting
@@ -28,38 +37,46 @@ class Game:
 
         self.role_map = None  # Player_id to role
 
+        self.stage = GameStage.WAITING
         self.chosing = False  # Is captain chosing
         self.confirming = False  # Is players comfirming team
 
         self.round = 0
         self.failed = 0  # The number of round that reject greater than approve
 
-    def set_tokens(self):
-        self.token_need = self.game_setting["token_need"][str(len(
-            self.users))]
+    # def get_ready_player():
+        # return [1 for _id in self.game.team if _id in self.ready]
 
     def get_teams(self, players):
         return [[players[i]["id"], players[i]["name"]] for i in self.users]
 
-    def set_characters(self, connected):
+    def start(self):
+        self.started = True
+        self.stage = GameStage.STORY
+        self.token_need = self.game_setting["token_need"][str(len(
+            self.users))]
+
         chars = self.game_setting["character_set"][str(len(self.users))]
         suf_chars = chars.copy()
         random.shuffle(suf_chars)
 
         self.role_map = dict(zip(self.users, suf_chars))
 
+    def get_start_msg(self):
         response = {
             "method": self.method.START,
-            "players": self.get_teams(connected),
             "token_need": self.token_need,
-            "has_percival": ("PERCIVAL" in chars),
-            "characters": chars}
+            "has_percival": ("PERCIVAL" in self.role_map.values()),
+            "characters": list(self.role_map.values())}
+
         return response
 
     def has_finish_story(self):
         return len(self.users) == self.story_finish
 
     def chose_captain(self):
+        self.stage = GameStage.CHOSETEAM
+
         # Clean up relative list
         self.team.clear()
         self.approve.clear()
@@ -88,13 +105,16 @@ class Game:
             "round": self.round,
             "captain": self.captain}
 
+    def in_team(self, user_id):
+        return user_id in self.team
+
     def chose_teamate(self, user_id, add_or_remove):
         if (add_or_remove and len(self.team) <
                 self.token_need["numbers"][self.round]):
-            if user_id not in self.team:
+            if not self.in_team(user_id):
                 self.team.append(user_id)
         else:
-            if user_id in self.team:
+            if self.in_team(user_id):
                 self.team.remove(user_id)
 
         response = {"method": self.method.CHOSENTEAMATE,
@@ -102,7 +122,8 @@ class Game:
 
         return response
 
-    def confirmTeam(self):
+    def confirm_team(self):
+        self.stage = GameStage.VOTEING
         self.chosing = False
         self.confirming = True
 
@@ -137,6 +158,10 @@ class Game:
     def reset_votes(self):
         self.approve.clear()
         self.reject.clear()
+
+    def execute_mission(self):
+        self.stage = GameStage.ONMISSION
+        self.reset_votes()
 
     def mission_success(self, _id):
         if _id not in self.success:

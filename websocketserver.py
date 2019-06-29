@@ -1,3 +1,7 @@
+from threading import Thread
+from datetime import datetime
+from time import sleep
+
 from game import Game
 
 import json
@@ -8,7 +12,8 @@ sys.path.append("../ProtocolWebscocket")
 from protocolws import WebsocketServer
 
 PLAYERLIMIT = 10
-REQUIRE_TO_START = 2
+REQUIRE_TO_START = 5
+AFK_TIMEOUT = 5
 SECRET = "mime"
 
 
@@ -33,48 +38,64 @@ class Server(WebsocketServer):
         super().__init__()
 
         self.game = Game(game_setting, method)
-        self.afk = set()
+        self.afk = {}
         self.ready = set()
 
     # Override WebsocketServer.disconnect
     def disconnect(self, _id, ws):
+        self.game.disconnect(_id)
+
         if self.game.started:
             with (yield from self.lock):
-                self.game.disconnect(_id)
-                self.afk.add(_id)
+                self.afk[_id] = datetime.now()
 
+                print(_id, "disconnect start timer.")
                 response = {"method": method.DISCONNECTTIMER, "user": _id,
-                            "name": self.connected[_id]["name"], "timer": 60}
+                            "name": self.connected[_id]["name"],
+                            "timer": AFK_TIMEOUT,
+                            "timestamp": int(self.afk[_id].timestamp())}
+
+                # Start timer.
+                Thread(target=self.afk_timeout,
+                       args=(AFK_TIMEOUT, _id)).start()
 
                 for p in self.connected.values():
                     if p["id"] not in self.afk:
                         yield from self.send(p["ws"], response)
+
             return
 
         # Remove user in other varible
         yield from super().disconnect(_id, ws)
-        if _id in self.game.users:
-            self.game.users.remove(_id)
+        if _id in self.ready:
+            self.ready.remove(_id)
 
         # Recount total players, and send message back
-        player_ready = len([1 for _id in self.game.team if _id in self.ready])
-        response = {"method": method.DISCONNECT, "user": _id,
+        response = {"method": method.READYDISCON,
                     "players_num": len(self.connected),
-                    "player_ready": player_ready}
+                    "player_ready": len(self.ready)}
 
         for p in self.connected.values():
             yield from self.send(p["ws"], response)
 
-    def start_game(self):
-        self.game.started = True
+    def afk_timeout(self, timeout, _id):
+        sleep(timeout)
+        if _id not in self.afk:
+            print("Player is here.")
+            return
 
-        self.game.set_tokens()
-        response = self.game.set_characters(self.connected)
+        self.stop_game()
+
+    def start_game(self):
+        self.game.start()
+        response = self.game.get_start_msg()
+        response["players"] = self.game.get_teams(self.connected)
 
         for p in self.game.users:
             role = self.game.role_map[p]
             response["role"] = role
 
+            # Give special character information
             if role in game_setting["special_power"]:
                 response["special_power"] = []
                 for k, v in self.game.role_map.items():
@@ -83,17 +104,24 @@ class Server(WebsocketServer):
 
             yield from self.send(self.connected[p]["ws"], response)
 
+    def stop_game(self):
+        print("stop game, tell everyone the rolemap.")
+        pass
+
     def approve_reject(self, response):
         resault = self.game.all_voted()
 
         # Check is everyone voted
         if resault is not None:
             if resault:
-                # Execute Mission
+                self.game.execute_mission()
+
+                # Send execute mission msg
                 with (yield from self.lock):
                     response = {"method": method.ASKSUCCESS}
+
                     for p in self.game.users:
-                        if p in self.game.team:
+                        if self.game.in_team(p):
                             response["teamate"] = True
                             yield from self.send(self.connected[p]["ws"],
                                                  response)
@@ -107,7 +135,7 @@ class Server(WebsocketServer):
             if self.game.failed >= 5:
                 # Game over evils win
                 response = self.game.evil_win(add_token=False)
-                print(response)
+
                 with (yield from self.lock):
                     for p in self.game.users:
                         yield from self.send(self.connected[p]["ws"], response)
@@ -220,15 +248,16 @@ class Server(WebsocketServer):
         with (yield from self.lock):
             self.ready.add(_id)
 
-            player_ready = len(
-                [1 for _id in self.game.users if _id in self.ready])
+            # player_ready = len(
+            # [1 for _id in self.game.users if _id in self.ready])
 
             for p in self.connected.values():
-                yield from self.send(p["ws"], {"method": method.CONFIRMREADY,
-                                               "user": _id,
-                                               "player_ready": player_ready})
+                yield from self.send(p["ws"],
+                                     {"method": method.CONFIRMREADY,
+                                      "user": _id,
+                                      "player_ready": len(self.ready)})
 
-            if len(self.game.users) == player_ready:
+            if len(self.game.users) == len(self.ready):
                 yield from self.start_game()
 
     def STORYFINISH(self, _id, ws, data):
@@ -270,7 +299,7 @@ class Server(WebsocketServer):
         if _id != self.game.captain:
             return
 
-        response = self.game.confirmTeam()
+        response = self.game.confirm_team()
         with (yield from self.lock):
             for p in self.game.users:
                 yield from self.send(self.connected[p]["ws"], response)
